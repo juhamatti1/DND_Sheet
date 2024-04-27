@@ -16,25 +16,21 @@ import com.example.dnd_sheet.Character.Stats
 import com.example.dnd_sheet.R
 import com.example.dnd_sheet.databinding.FragmentHomeBinding
 
-open class Stat(stat: Stats, stat_view: View) {
+open class Stat(stat: Stats, stat_view: View, statUpdated: ((stat: Stat) -> Unit)) {
     private val TAG: String = "STAT"
     private var main_value: EditText
     private var sub_value: TextView
-
-    fun setValue(value: Int) {
-        main_value.setText(value)
-        sub_value.setText((value - 10) / 2)
-    }
-
-    fun getValue(): Int {
-        return main_value.text.toString().toInt()
-    }
+    val type: Stats
 
     init {
         main_value = stat_view.findViewById(R.id.main_value)
         sub_value = stat_view.findViewById(R.id.sub_value)
-        stat_view.findViewById<TextView>(R.id.title).text = stat.toString()
+        type = stat
+        stat_view.findViewById<TextView>(R.id.title).text = type.toString()
+
         main_value.addTextChangedListener(afterTextChanged = listener@{ text: Editable? ->
+            statUpdated.invoke(this)
+            // Logic for increasing/decreasing stat bonus based on typed main value
             if (text.isNullOrEmpty()) {
                 Log.d(TAG, "Failed to add text changed listener")
                 return@listener
@@ -62,6 +58,9 @@ open class Stat(stat: Stats, stat_view: View) {
         })
     }
 
+    fun getValue(): Int {
+        return sub_value.text.toString().toInt()
+    }
 }
 
 class HomeFragment : Fragment() {
@@ -89,20 +88,24 @@ class HomeFragment : Fragment() {
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-
         val stat_list: MutableList<Stat> = ArrayList<Stat>().toMutableList()
 
         Stats.values().forEach { stat ->
             val stat_view = inflater.inflate(R.layout.stat_view, container, false)
-//            val main_value_view = stat_view.findViewById<EditText>(R.id.main_value)
-//            val sub_value_view = stat_view.findViewById<TextView>(R.id.sub_value)
-//            stat_list.add(Stat(stat, main_value_view, sub_value_view))
-            stat_list.add(Stat(stat, stat_view))
+            stat_list.add(Stat(stat, stat_view)  { updateStat ->
+                // update character stats when user changes value of stat
+                when (updateStat.type) {
+                    Stats.STRENGTH -> character.strength = updateStat.getValue()
+                    Stats.CHARISMA -> character.charisma = updateStat.getValue()
+                    Stats.DEXTERITY -> character.dexterity = updateStat.getValue()
+                    Stats.CONSTITUTION -> character.constitution = updateStat.getValue()
+                    Stats.INTELLIGENCE -> character.intelligence = updateStat.getValue()
+                    Stats.WISDOM -> character.wisdom = updateStat.getValue()
+                    Stats.INSPIRATION -> character.inspiration = updateStat.getValue()
+                }
+            })
             binding.statsLayout.addView(stat_view)
         }
-        //val new_layout = layoutInflater.inflate(R.layout.stat_view, stat_layout, false)
-
-        //binding.statsLayout.addView(new_layout)
 
         return binding.root
     }
