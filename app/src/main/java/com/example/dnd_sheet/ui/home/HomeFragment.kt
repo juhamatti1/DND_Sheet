@@ -1,5 +1,6 @@
 package com.example.dnd_sheet.ui.home
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -63,15 +64,8 @@ class HomeFragment : Fragment() {
                 val resizedBitmap = Bitmap.createBitmap(statsBitmap, 0, 0, statsBitmap.width,
                     statsBitmap.height, matrix, false)
 
-                // Draw helper lines for inputting edittexts
-//                val linePaint = Paint()
-//                linePaint.color = Color.RED
-//                linePaint.strokeWidth = 10f
-//                val canvas = Canvas(resizedBitmap)
-//                val lineX = resizedBitmap.width / 2f
-//                val lineY1 = 0f
-//                val lineY2 = resizedBitmap.height.toFloat()
-//                canvas.drawLine(lineX, lineY1, lineX, lineY2, linePaint)
+                // Recycle old bitmap to avoid memory leak
+                statsBitmap.recycle()
 
                 val context = requireContext()
 
@@ -80,18 +74,10 @@ class HomeFragment : Fragment() {
                 statsImageView.setImageBitmap(resizedBitmap)
                 statsLayout.addView(statsImageView)
 
+                // Creating edit text and text views for main and bonus stats
                 for(i in 0..5) {
                     // Creating edit texts for main stats
-                    val mainStatEditText = EditText(context)
-                    mainStatEditText.id = View.generateViewId()
-                    mainStatEditText.width = dpToPx(75)
-                    mainStatEditText.height = dpToPx(45)
-                    mainStatEditText.setBackgroundColor(Color.RED)
-                    mainStatEditText.background.alpha = 50
-                    mainStatEditText.textSize = 20f
-                    mainStatEditText.gravity = Gravity.CENTER
-                    mainStatEditText.inputType = InputType.TYPE_CLASS_NUMBER
-                    mainStatEditText.setText("0")
+                    val mainStatEditText = createEditText(context, 75, 45)
 
                     // Creating text views for bonus stats
                     val bonusView = TextView(context)
@@ -104,6 +90,7 @@ class HomeFragment : Fragment() {
                     bonusView.gravity = Gravity.CENTER
                     bonusView.text = "0"
 
+                    // Listener to update bonus stats when main stat is edited
                     mainStatEditText.addTextChangedListener(afterTextChanged = listener@{ text: Editable? ->
                         // Logic for increasing/decreasing stat bonus based on typed main value
                         val mainValue: Int = try {
@@ -128,9 +115,6 @@ class HomeFragment : Fragment() {
                         }
                     })
 
-                    // Recycle old bitmap to avoid memory leak
-                    statsBitmap.recycle()
-
                     // Need to add views in order so views in front are added last
                     statsLayout.addView(mainStatEditText)
                     statsLayout.addView(bonusView)
@@ -141,20 +125,26 @@ class HomeFragment : Fragment() {
                     setStartTopConstraints(statsLayout, mainStatEditText, statsLayout, 45, 60 + i*130)
                     setStartTopConstraints(statsLayout, bonusView, mainStatEditText, 16, 55)
                 }
-//                val constraintSet = ConstraintSet()
-//                constraintSet.clone(statsLayout)
-//                // Constraint in horizontal
-//                constraintSet.connect(
-//                    editText.id, ConstraintSet.START,
-//                    statsLayout.id, ConstraintSet.START,
-//                    dpToPx(45))
-//
-//                // Constraint in vertical
-//                constraintSet.connect(
-//                    editText.id, ConstraintSet.TOP,
-//                    statsLayout.id, ConstraintSet.TOP,
-//                    dpToPx(60))
-//                constraintSet.applyTo(statsLayout)
+
+                // Creating edit text for inspiration
+                val inspirationText = createEditText(context, 45, 40)
+                statsLayout.addView(inspirationText)
+                setStartTopConstraints(statsLayout, inspirationText, statsLayout, 150, 10)
+            }
+
+            // Custom method for creating edit text
+            private fun createEditText(context: Context, width: Int, height: Int): EditText {
+                val mainStatEditText = EditText(context)
+                mainStatEditText.id = View.generateViewId()
+                mainStatEditText.width = dpToPx(width)
+                mainStatEditText.height = dpToPx(height)
+                mainStatEditText.setBackgroundColor(Color.RED)
+                mainStatEditText.background.alpha = 50
+                mainStatEditText.textSize = 20f
+                mainStatEditText.gravity = Gravity.CENTER
+                mainStatEditText.inputType = InputType.TYPE_CLASS_NUMBER
+                mainStatEditText.setText("0")
+                return mainStatEditText
             }
         })
     }
