@@ -1,67 +1,20 @@
 package com.example.dnd_sheet.ui.home
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.os.Bundle
-import android.text.Editable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
-import android.widget.TextView
-import androidx.core.widget.addTextChangedListener
+import android.view.ViewTreeObserver
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import com.example.dnd_sheet.Character
-import com.example.dnd_sheet.Character.Stats
 import com.example.dnd_sheet.R
 import com.example.dnd_sheet.databinding.FragmentHomeBinding
-
-open class Stat(stat: Stats, stat_view: View, statUpdated: ((stat: Stat) -> Unit)) {
-    private val TAG: String = "STAT"
-    private var main_value: EditText
-    private var sub_value: TextView
-    val type: Stats
-
-    init {
-        main_value = stat_view.findViewById(R.id.main_value)
-        sub_value = stat_view.findViewById(R.id.sub_value)
-        type = stat
-        stat_view.findViewById<TextView>(R.id.title).text = type.toString()
-
-        main_value.addTextChangedListener(afterTextChanged = listener@{ text: Editable? ->
-            statUpdated.invoke(this)
-            // Logic for increasing/decreasing stat bonus based on typed main value
-            if (text.isNullOrEmpty()) {
-                Log.d(TAG, "Failed to add text changed listener")
-                return@listener
-            }
-            val mainValue: Int = try {
-                text.toString().toInt()
-            } catch (e: NumberFormatException) {
-                Log.d(TAG, "Failed to add text changed listener")
-                return@listener
-            }
-
-            var subValue: Int = (mainValue -10) / 2
-            val fragmentValue = (mainValue-10)%2
-            if(fragmentValue > 0) {
-                subValue += 1
-            } else if(fragmentValue < 0) {
-                subValue -= 1
-            }
-            sub_value.text = subValue.toString()
-
-            val textString = text.toString()
-            if (textString[0] == '0' && textString.length > 1) {
-                main_value.setText(textString.removeRange(0, 1))
-            }
-        })
-    }
-
-    fun getValue(): Int {
-        return sub_value.text.toString().toInt()
-    }
-}
 
 class HomeFragment : Fragment() {
 
@@ -77,37 +30,101 @@ class HomeFragment : Fragment() {
     // telling to Kotlin's type system _binding is not null.
     // This is pretty hacky to me.
     private val binding get() = _binding!!
-    private lateinit var character: Character
+
+    override fun onStart() {
+        super.onStart()
+
+        val statsLayout: RelativeLayout = view?.findViewById(R.id.stats_layout) ?: return
+        statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                //Remove the listener before proceeding
+                statsLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
+
+                // Change layout width x height ratio to match background image
+                val statsBitmap = BitmapFactory.decodeResource(resources, R.drawable.stats)
+
+                val layoutWidth = statsLayout.measuredWidth
+                val layoutHeight = statsLayout.measuredHeight
+
+                // Using matrix to scale imageview to fit nicely to linear layout
+                val matrix = Matrix()
+                val scale = layoutWidth / statsBitmap.width.toFloat()
+                matrix.postScale(scale,scale)
+
+                val resizedBitmap = Bitmap.createBitmap(statsBitmap, 0, 0, statsBitmap.width,
+                    statsBitmap.height, matrix, false)
+
+                // Recycle old bitmap to avoid memory leak
+                statsBitmap.recycle()
+
+                val context = requireContext()
+                val statsImageView = ImageView(context)
+                statsImageView.setImageBitmap(resizedBitmap)
+                statsLayout.addView(statsImageView)
+
+                Log.i(TAG, "stats w: fragment w:$layoutWidth h:$layoutHeight")
+
+
+//                val statsDrawable = ContextCompat.getDrawable(context, R.drawable.stats)
+//                statsLayout.background = ContextCompat.getDrawable(context, R.drawable.stats)
+            }
+        })
+
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        character = ViewModelProvider(this)[Character::class.java]
-
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        val root = binding.root
 
-        val stat_list: MutableList<Stat> = ArrayList<Stat>().toMutableList()
+        val statsLayout: LinearLayout = view?.findViewById(R.id.stats_layout) ?: return root
+        statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                //Remove the listener before proceeding
+                statsLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
 
-        Stats.values().forEach { stat ->
-            val stat_view = inflater.inflate(R.layout.stat_view, container, false)
-            stat_list.add(Stat(stat, stat_view)  { updateStat ->
-                // update character stats when user changes value of stat
-                when (updateStat.type) {
-                    Stats.STRENGTH -> character.strength = updateStat.getValue()
-                    Stats.CHARISMA -> character.charisma = updateStat.getValue()
-                    Stats.DEXTERITY -> character.dexterity = updateStat.getValue()
-                    Stats.CONSTITUTION -> character.constitution = updateStat.getValue()
-                    Stats.INTELLIGENCE -> character.intelligence = updateStat.getValue()
-                    Stats.WISDOM -> character.wisdom = updateStat.getValue()
-                    Stats.INSPIRATION -> character.inspiration = updateStat.getValue()
-                }
-            })
-            binding.statsLayout.addView(stat_view)
-        }
+                // Change layout width x height ratio to match background image
+                val statsBitmap = BitmapFactory.decodeResource(resources, R.drawable.stats)
+                val sdw = statsBitmap.width
+                val sdh = statsBitmap.height
 
-        return binding.root
+                val hw = statsLayout.measuredWidth
+                val hh = statsLayout.measuredHeight
+                Log.i(TAG, "stats w:$sdw h:$sdh, fragment w:$hw h:$hh")
+
+            }
+        })
+
+//        val homeFragmentLayout: LinearLayout = layoutInflater.inflate(R.layout.fragment_home, null) as LinearLayout
+
+        // the object keyword is used to create an anonymous object that implements the
+        // ViewTreeObserver.OnGlobalLayoutListener interface
+
+//        val l: LinearLayout = view?.findViewById(R.id.stats_layout) ?: return root
+//        val hw = homeFragmentLayout.measuredWidth
+//        val hh = homeFragmentLayout.measuredHeight
+//        Log.i(TAG, "layout w:${l.measuredWidth} h:${l.measuredHeight} fragment w:$hw h:$hh")
+//
+//        homeFragmentLayout.viewTreeObserver.addOnGlobalLayoutListener (object : ViewTreeObserver.OnGlobalLayoutListener {
+//            override fun onGlobalLayout() {
+//                //Remove the listener before proceeding
+//                homeFragmentLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
+//
+//                // Change layout width x height ratio to match background image
+//                val statsBitmap = BitmapFactory.decodeResource(resources, R.drawable.stats)
+//                val sdw = statsBitmap.width
+//                val sdh = statsBitmap.height
+//
+//                val hw = homeFragmentLayout.measuredWidth
+//                val hh = homeFragmentLayout.measuredHeight
+//                Log.i(TAG, "stats w:$sdw h:$sdh, fragment w:$hw h:$hh")
+//            }
+//        })
+
+        return root
     }
 
     override fun onDestroyView() {
