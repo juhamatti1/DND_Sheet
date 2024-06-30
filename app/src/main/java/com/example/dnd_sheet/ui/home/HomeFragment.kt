@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Matrix
 import android.os.Bundle
+import android.text.Editable
 import android.text.InputType
 import android.util.Log
 import android.util.TypedValue
@@ -19,6 +20,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import com.example.dnd_sheet.R
 import com.example.dnd_sheet.databinding.FragmentHomeBinding
@@ -73,44 +75,72 @@ class HomeFragment : Fragment() {
 
                 val context = requireContext()
 
-                // Creting edit texts for main stats
-                val editText = EditText(context)
-                editText.id = View.generateViewId()
-                editText.width = dpToPx(75)
-                editText.height = dpToPx(45)
-                editText.setBackgroundColor(Color.RED)
-                editText.background.alpha = 50
-                editText.textSize = 20f
-                editText.gravity = Gravity.CENTER
-                editText.inputType = InputType.TYPE_CLASS_NUMBER
-                editText.setText("0")
-
-                // Creating text views for bonus stats
-                val bonusView = TextView(context)
-                bonusView.id = View.generateViewId()
-                bonusView.width = dpToPx(40)
-                bonusView.height = dpToPx(30)
-                bonusView.setBackgroundColor(Color.BLUE)
-                bonusView.background.alpha = 50
-                bonusView.textSize = 20f
-                bonusView.gravity = Gravity.CENTER
-                bonusView.text = "0"
-
-                // Recycle old bitmap to avoid memory leak
-                statsBitmap.recycle()
-
                 val statsImageView = ImageView(context)
                 statsImageView.id = View.generateViewId()
                 statsImageView.setImageBitmap(resizedBitmap)
-
-                // Need to add views in order so views in front are added last
                 statsLayout.addView(statsImageView)
-                statsLayout.addView(editText)
-                statsLayout.addView(bonusView)
 
-                // Set constraints to views after views are added
-                setStartTopConstraints(statsLayout, editText, statsLayout, 45, 60)
-                setStartTopConstraints(statsLayout, bonusView, editText, 16, 55)
+                for(i in 0..5) {
+                    // Creating edit texts for main stats
+                    val mainStatEditText = EditText(context)
+                    mainStatEditText.id = View.generateViewId()
+                    mainStatEditText.width = dpToPx(75)
+                    mainStatEditText.height = dpToPx(45)
+                    mainStatEditText.setBackgroundColor(Color.RED)
+                    mainStatEditText.background.alpha = 50
+                    mainStatEditText.textSize = 20f
+                    mainStatEditText.gravity = Gravity.CENTER
+                    mainStatEditText.inputType = InputType.TYPE_CLASS_NUMBER
+                    mainStatEditText.setText("0")
+
+                    // Creating text views for bonus stats
+                    val bonusView = TextView(context)
+                    bonusView.id = View.generateViewId()
+                    bonusView.width = dpToPx(40)
+                    bonusView.height = dpToPx(30)
+                    bonusView.setBackgroundColor(Color.BLUE)
+                    bonusView.background.alpha = 50
+                    bonusView.textSize = 20f
+                    bonusView.gravity = Gravity.CENTER
+                    bonusView.text = "0"
+
+                    mainStatEditText.addTextChangedListener(afterTextChanged = listener@{ text: Editable? ->
+                        // Logic for increasing/decreasing stat bonus based on typed main value
+                        val mainValue: Int = try {
+                            text.toString().toInt()
+                        } catch (e: NumberFormatException) {
+                            Log.e(TAG, "Failed to add text changed listener")
+                            return@listener
+                        }
+
+                        var subValue: Int = (mainValue - 10) / 2
+                        val fragmentValue = (mainValue - 10) % 2
+                        if (fragmentValue > 0) {
+                            subValue += 1
+                        } else if (fragmentValue < 0) {
+                            subValue -= 1
+                        }
+                        bonusView.text = subValue.toString()
+
+                        val textString = text.toString()
+                        if (textString[0] == '0' && textString.length > 1) {
+                            mainStatEditText.setText(textString.removeRange(0, 1))
+                        }
+                    })
+
+                    // Recycle old bitmap to avoid memory leak
+                    statsBitmap.recycle()
+
+                    // Need to add views in order so views in front are added last
+                    statsLayout.addView(mainStatEditText)
+                    statsLayout.addView(bonusView)
+
+                    Log.i(TAG, "main stat id:${mainStatEditText.id}, i:$i")
+
+                    // Set constraints to views after views are added
+                    setStartTopConstraints(statsLayout, mainStatEditText, statsLayout, 45, 60 + i*130)
+                    setStartTopConstraints(statsLayout, bonusView, mainStatEditText, 16, 55)
+                }
 //                val constraintSet = ConstraintSet()
 //                constraintSet.clone(statsLayout)
 //                // Constraint in horizontal
