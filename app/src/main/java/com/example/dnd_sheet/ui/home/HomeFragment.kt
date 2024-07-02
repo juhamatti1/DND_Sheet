@@ -19,10 +19,13 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import com.example.dnd_sheet.Character
 import com.example.dnd_sheet.R
 import com.example.dnd_sheet.databinding.FragmentHomeBinding
 
@@ -32,6 +35,7 @@ class HomeFragment : Fragment() {
     // ? makes possible that variable can be declared as null
     private var _binding: FragmentHomeBinding? = null
     private val TAG: String = "HomeFragment"
+    private lateinit var characterViewModel: Character
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -41,6 +45,11 @@ class HomeFragment : Fragment() {
     // telling to Kotlin's type system _binding is not null.
     // This is pretty hacky to me.
     private val binding get() = _binding!!
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        characterViewModel = ViewModelProvider(this)[Character::class.java]
+    }
 
     override fun onStart() {
         super.onStart()
@@ -91,12 +100,14 @@ class HomeFragment : Fragment() {
                     bonusView.text = "0"
 
                     // Listener to update bonus stats when main stat is edited
-                    mainStatEditText.addTextChangedListener(afterTextChanged = listener@{ text: Editable? ->
+                    mainStatEditText.addTextChangedListener(afterTextChanged = listener@{ editedText: Editable? ->
                         // Logic for increasing/decreasing stat bonus based on typed main value
                         val mainValue: Int = try {
-                            text.toString().toInt()
+                            editedText.toString().toInt()
                         } catch (e: NumberFormatException) {
-                            Log.e(TAG, "Failed to add text changed listener")
+                            val errorMessage = "Invalid number"
+                            Log.e(TAG, errorMessage)
+                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                             return@listener
                         }
 
@@ -109,10 +120,15 @@ class HomeFragment : Fragment() {
                         }
                         bonusView.text = subValue.toString()
 
-                        val textString = text.toString()
+                        val textString = editedText.toString()
                         if (textString[0] == '0' && textString.length > 1) {
                             mainStatEditText.setText(textString.removeRange(0, 1))
                         }
+                        val toastText = if(characterViewModel.setStatValue(i, mainValue))
+                            "Set ${Character.Stats.values()[i]} to $mainValue"
+                        else
+                            "Failed to set stat"
+                        Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
                     })
 
                     // Need to add views in order so views in front are added last
@@ -128,6 +144,22 @@ class HomeFragment : Fragment() {
 
                 // Creating edit text for inspiration
                 val inspirationText = createEditText(context, 45, 40)
+                inspirationText.addTextChangedListener(afterTextChanged = { editedText: Editable? ->
+                    val toastText: String
+                    val value: Int = try {
+                        editedText.toString().toInt()
+                    } catch (e: NumberFormatException) {
+                        toastText = "Invalid number"
+                        Log.e(TAG, toastText)
+                        Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
+                        return@addTextChangedListener
+                    }
+                    characterViewModel.inspiration = value
+                    toastText = "Set inspiration to $value"
+                    Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
+                    characterViewModel.inspiration = value
+                })
+
                 statsLayout.addView(inspirationText)
                 setStartTopConstraints(statsLayout, inspirationText, statsLayout, 150, 10)
             }
