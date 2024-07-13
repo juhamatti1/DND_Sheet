@@ -8,6 +8,7 @@ import android.graphics.Matrix
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
+import android.text.TextWatcher
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
@@ -17,7 +18,6 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -51,10 +51,11 @@ class HomeFragment : Fragment() {
         characterViewModel = ViewModelProvider(this)[Character::class.java]
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val statsLayout: ConstraintLayout = view?.findViewById(R.id.stats_layout) ?: return
+        val statsLayout: ConstraintLayout = view.findViewById(R.id.stats_layout)
+
         statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 //Remove the listener before proceeding
@@ -120,15 +121,19 @@ class HomeFragment : Fragment() {
                         }
                         bonusView.text = subValue.toString()
 
-                        val textString = editedText.toString()
-                        if (textString[0] == '0' && textString.length > 1) {
-                            mainStatEditText.setText(textString.removeRange(0, 1))
+                        cleanFrontZeros(mainStatEditText)
+
+                        val stat: Character.Stats = Character.Stats.values()[i]
+                        val toastText: String
+                        if(stat.equals(null)) {
+                            toastText = "Invalid stat id:${i}"
+                        } else {
+                            characterViewModel.setStatValue(stat, mainValue)
+                            toastText = "Set ${Character.Stats.values()[i]} to ${characterViewModel.stats[stat.ordinal]}"
                         }
-                        val toastText = if(characterViewModel.setStatValue(i, mainValue))
-                            "Set ${Character.Stats.values()[i]} to $mainValue"
-                        else
-                            "Failed to set stat"
-                        Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context,
+                            toastText,
+                            Toast.LENGTH_SHORT).show()
                     })
 
                     // Need to add views in order so views in front are added last
@@ -142,29 +147,51 @@ class HomeFragment : Fragment() {
                     setStartTopConstraints(statsLayout, bonusView, mainStatEditText, 16, 55)
                 }
 
+                class Listener(val statText: EditText, val stat: Character.Stats) : TextWatcher {
+                    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+                    override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+                    override fun afterTextChanged(newText: Editable?) {
+                        val toastText: String
+                        val value: Int = try {
+                            newText.toString().toInt()
+                        } catch (e: NumberFormatException) {
+                            toastText = "Invalid number"
+                            Log.e(TAG, toastText)
+                            Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                        cleanFrontZeros(statText)
+                        characterViewModel.stats[stat.ordinal] = value
+                        toastText = "Set $stat to ${characterViewModel.stats[stat.ordinal]}"
+                        Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
+                    }
+                }
+
                 // Creating edit text for inspiration
                 val inspirationText = createEditText(context, 45, 40)
-                inspirationText.addTextChangedListener(afterTextChanged = { editedText: Editable? ->
-                    val toastText: String
-                    val value: Int = try {
-                        editedText.toString().toInt()
-                    } catch (e: NumberFormatException) {
-                        toastText = "Invalid number"
-                        Log.e(TAG, toastText)
-                        Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
-                        return@addTextChangedListener
-                    }
-                    characterViewModel.inspiration = value
-                    toastText = "Set inspiration to $value"
-                    Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
-                    characterViewModel.inspiration = value
-                })
-
+                inspirationText.addTextChangedListener(Listener(inspirationText, Character.Stats.INSPIRATION))
                 statsLayout.addView(inspirationText)
                 setStartTopConstraints(statsLayout, inspirationText, statsLayout, 150, 10)
+
+                // Creating edit text for proficiency bonus
+                val proficiencyText = createEditText(context, 45, 40)
+                proficiencyText.addTextChangedListener(Listener(proficiencyText, Character.Stats.PROFICIENCY_BONUS))
+                statsLayout.addView(proficiencyText)
+                setStartTopConstraints(statsLayout, proficiencyText, statsLayout, 152, 77)
             }
 
-            // Custom method for creating edit text
+            // -------------------------------------------------------------------------------------
+            // HELPER FUNCTIONS --------------------------------------------------------------------
+            // -------------------------------------------------------------------------------------
+            private fun cleanFrontZeros(editText: EditText) {
+                val textString = editText.text
+                if (textString[0] == '0' && textString.length > 1) {
+                    editText.setText(textString.removeRange(0, 1))
+                    // Set cursor to the end of edit text after removing "0"
+                    editText.setSelection(editText.length())
+                }
+            }
+
             private fun createEditText(context: Context, width: Int, height: Int): EditText {
                 val mainStatEditText = EditText(context)
                 mainStatEditText.id = View.generateViewId()
@@ -178,31 +205,33 @@ class HomeFragment : Fragment() {
                 mainStatEditText.setText("0")
                 return mainStatEditText
             }
+
+            private fun setStartTopConstraints(layout: ConstraintLayout, firstView: View,
+                                               secondView: View,
+                                               startMargin: Int, topMargin: Int) {
+                val constraintSet = ConstraintSet()
+                constraintSet.clone(layout)
+                // Constraint in horizontal
+                constraintSet.connect(
+                    firstView.id, ConstraintSet.START,
+                    secondView.id, ConstraintSet.START,
+                    dpToPx(startMargin))
+
+                // Constraint in vertical
+                constraintSet.connect(
+                    firstView.id, ConstraintSet.TOP,
+                    secondView.id, ConstraintSet.TOP,
+                    dpToPx(topMargin))
+                constraintSet.applyTo(layout)
+            }
+
+            private fun dpToPx(dp: Number): Int {
+                return TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(), resources.displayMetrics
+                ).toInt()
+            }
         })
-    }
-
-    fun setStartTopConstraints(layout: ConstraintLayout, firstView: View, secondView: View,
-                               startMargin: Int, topMargin: Int) {
-        val constraintSet = ConstraintSet()
-        constraintSet.clone(layout)
-        // Constraint in horizontal
-        constraintSet.connect(
-            firstView.id, ConstraintSet.START,
-            secondView.id, ConstraintSet.START,
-            dpToPx(startMargin))
-
-        // Constraint in vertical
-        constraintSet.connect(
-            firstView.id, ConstraintSet.TOP,
-            secondView.id, ConstraintSet.TOP,
-            dpToPx(topMargin))
-        constraintSet.applyTo(layout)
-    }
-
-    fun dpToPx(dp: Number): Int {
-        return TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(), resources.displayMetrics
-        ).toInt()
+        Toast.makeText(requireContext(), "onViewCreated called", Toast.LENGTH_SHORT).show()
     }
 
     override fun onCreateView(
@@ -211,53 +240,8 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val root = binding.root
-
-        val statsLayout: LinearLayout = view?.findViewById(R.id.stats_layout) ?: return root
-        statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                //Remove the listener before proceeding
-                statsLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
-
-                // Change layout width x height ratio to match background image
-                val statsBitmap = BitmapFactory.decodeResource(resources, R.drawable.stats)
-                val sdw = statsBitmap.width
-                val sdh = statsBitmap.height
-
-                val hw = statsLayout.measuredWidth
-                val hh = statsLayout.measuredHeight
-                Log.i(TAG, "stats w:$sdw h:$sdh, fragment w:$hw h:$hh")
-
-            }
-        })
-
-//        val homeFragmentLayout: LinearLayout = layoutInflater.inflate(R.layout.fragment_home, null) as LinearLayout
-
-        // the object keyword is used to create an anonymous object that implements the
-        // ViewTreeObserver.OnGlobalLayoutListener interface
-
-//        val l: LinearLayout = view?.findViewById(R.id.stats_layout) ?: return root
-//        val hw = homeFragmentLayout.measuredWidth
-//        val hh = homeFragmentLayout.measuredHeight
-//        Log.i(TAG, "layout w:${l.measuredWidth} h:${l.measuredHeight} fragment w:$hw h:$hh")
-//
-//        homeFragmentLayout.viewTreeObserver.addOnGlobalLayoutListener (object : ViewTreeObserver.OnGlobalLayoutListener {
-//            override fun onGlobalLayout() {
-//                //Remove the listener before proceeding
-//                homeFragmentLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
-//
-//                // Change layout width x height ratio to match background image
-//                val statsBitmap = BitmapFactory.decodeResource(resources, R.drawable.stats)
-//                val sdw = statsBitmap.width
-//                val sdh = statsBitmap.height
-//
-//                val hw = homeFragmentLayout.measuredWidth
-//                val hh = homeFragmentLayout.measuredHeight
-//                Log.i(TAG, "stats w:$sdw h:$sdh, fragment w:$hw h:$hh")
-//            }
-//        })
-
-        return root
+        Toast.makeText(requireContext(), "onCreateView called", Toast.LENGTH_SHORT).show()
+        return binding.root
     }
 
     override fun onDestroyView() {
