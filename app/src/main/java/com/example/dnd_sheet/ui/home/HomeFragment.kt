@@ -26,8 +26,12 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.dnd_sheet.Character
+import com.example.dnd_sheet.Character.Stats
 import com.example.dnd_sheet.R
 import com.example.dnd_sheet.databinding.FragmentHomeBinding
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.FileNotFoundException
 
 
 class HomeFragment : Fragment() {
@@ -51,11 +55,19 @@ class HomeFragment : Fragment() {
         characterViewModel = ViewModelProvider(this)[Character::class.java]
     }
 
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         val statsLayout: ConstraintLayout = view.findViewById(R.id.stats_layout)
-
         statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 //Remove the listener before proceeding
@@ -87,7 +99,7 @@ class HomeFragment : Fragment() {
                 // Creating edit text and text views for main and bonus stats
                 for(i in 0..5) {
                     // Creating edit texts for main stats
-                    val mainStatEditText = createEditText(context, 75, 45)
+                    val mainStatEditText = createEditText(context, 75, 45, Stats.entries[i])
 
                     // Creating text views for bonus stats
                     val bonusView = TextView(context)
@@ -123,13 +135,13 @@ class HomeFragment : Fragment() {
 
                         cleanFrontZeros(mainStatEditText)
 
-                        val stat: Character.Stats = Character.Stats.values()[i]
+                        val stat: Stats = Stats.values()[i]
                         val toastText: String
                         if(stat.equals(null)) {
                             toastText = "Invalid stat id:${i}"
                         } else {
-                            characterViewModel.setStatValue(stat, mainValue)
-                            toastText = "Set ${Character.Stats.values()[i]} to ${characterViewModel.stats[stat.ordinal]}"
+                            characterViewModel.stats[stat.ordinal] = mainValue
+                            toastText = "Set ${Stats.values()[i]} to ${characterViewModel.stats[stat.ordinal]}"
                         }
                         Toast.makeText(context,
                             toastText,
@@ -140,14 +152,12 @@ class HomeFragment : Fragment() {
                     statsLayout.addView(mainStatEditText)
                     statsLayout.addView(bonusView)
 
-                    Log.i(TAG, "main stat id:${mainStatEditText.id}, i:$i")
-
                     // Set constraints to views after views are added
                     setStartTopConstraints(statsLayout, mainStatEditText, statsLayout, 45, 60 + i*130)
                     setStartTopConstraints(statsLayout, bonusView, mainStatEditText, 16, 55)
                 }
 
-                class Listener(val statText: EditText, val stat: Character.Stats) : TextWatcher {
+                class Listener(val statText: EditText, val stat: Stats) : TextWatcher {
                     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
                     override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
                     override fun afterTextChanged(newText: Editable?) {
@@ -168,14 +178,14 @@ class HomeFragment : Fragment() {
                 }
 
                 // Creating edit text for inspiration
-                val inspirationText = createEditText(context, 45, 40)
-                inspirationText.addTextChangedListener(Listener(inspirationText, Character.Stats.INSPIRATION))
+                val inspirationText = createEditText(context, 45, 40, Stats.INSPIRATION)
+                inspirationText.addTextChangedListener(Listener(inspirationText, Stats.INSPIRATION))
                 statsLayout.addView(inspirationText)
                 setStartTopConstraints(statsLayout, inspirationText, statsLayout, 150, 10)
 
                 // Creating edit text for proficiency bonus
-                val proficiencyText = createEditText(context, 45, 40)
-                proficiencyText.addTextChangedListener(Listener(proficiencyText, Character.Stats.PROFICIENCY_BONUS))
+                val proficiencyText = createEditText(context, 45, 40, Stats.PROFICIENCY_BONUS)
+                proficiencyText.addTextChangedListener(Listener(proficiencyText, Stats.PROFICIENCY_BONUS))
                 statsLayout.addView(proficiencyText)
                 setStartTopConstraints(statsLayout, proficiencyText, statsLayout, 152, 77)
             }
@@ -192,7 +202,7 @@ class HomeFragment : Fragment() {
                 }
             }
 
-            private fun createEditText(context: Context, width: Int, height: Int): EditText {
+            private fun createEditText(context: Context, width: Int, height: Int, stat: Stats): EditText {
                 val mainStatEditText = EditText(context)
                 mainStatEditText.id = View.generateViewId()
                 mainStatEditText.width = dpToPx(width)
@@ -202,7 +212,8 @@ class HomeFragment : Fragment() {
                 mainStatEditText.textSize = 20f
                 mainStatEditText.gravity = Gravity.CENTER
                 mainStatEditText.inputType = InputType.TYPE_CLASS_NUMBER
-                mainStatEditText.setText("0")
+                mainStatEditText.setTextColor(Color.BLACK)
+                mainStatEditText.setText(characterViewModel.stats[stat.ordinal].toString())
                 return mainStatEditText
             }
 
@@ -231,17 +242,41 @@ class HomeFragment : Fragment() {
                 ).toInt()
             }
         })
-        Toast.makeText(requireContext(), "onViewCreated called", Toast.LENGTH_SHORT).show()
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        Toast.makeText(requireContext(), "onCreateView called", Toast.LENGTH_SHORT).show()
-        return binding.root
+    val name = "character"
+
+    override fun onPause() {
+        super.onPause()
+        val text = Json.encodeToString(characterViewModel)
+        println("WRITE:$text")
+        requireContext().openFileOutput(name, Context.MODE_PRIVATE).use {
+            it.write(text.toByteArray())
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val bytes: ByteArray
+        try {
+            requireContext().openFileInput(name).use {
+                bytes = it.readBytes()
+                it.close()
+            }
+        } catch (e: FileNotFoundException) {
+            println("Can't find \"$name\" file")
+            return
+        }
+        println("READ:${bytes.decodeToString()}")
+        var character: Character? = null
+        val error = kotlin.runCatching {
+            character = Json.decodeFromString<Character>(bytes.decodeToString())
+        }
+        if(character == null) {
+            println(error.exceptionOrNull())
+            return
+        }
+        characterViewModel = character as Character
     }
 
     override fun onDestroyView() {

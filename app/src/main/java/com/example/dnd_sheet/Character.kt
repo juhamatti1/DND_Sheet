@@ -4,19 +4,19 @@ import androidx.lifecycle.ViewModel
 import kotlinx.serialization.Serializable
 
 
-
 @Serializable
 class Character : ViewModel() {
     val TAG = "CHARACTER"
     var name: String = ""
-    lateinit var primary_class: DND_classes
-    lateinit var primary_race: Races
-    var experience: Float = 0f
+    // Need to comment these until they are actually used for serialization
+//    lateinit var primary_class: DND_classes
+//    lateinit var primary_race: Races
+//    var experience: Float = 0f
 
-    val stats = IntArray(Stats.values().size) { 0 }
+    val stats = IntArray(Stats.entries.size) { 0 }
 
-    lateinit var saving_throws: HashMap<Saving_throws, Int>
-    lateinit var skills: HashMap<Skills, Boolean>
+//    lateinit var saving_throws: HashMap<Saving_throws, Int>
+//    lateinit var skills: HashMap<Skills, Boolean>
 
     enum class Stats {
         STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA, INSPIRATION, PROFICIENCY_BONUS, PASSIVE_WISDOM
@@ -34,13 +34,10 @@ class Character : ViewModel() {
     enum class Saving_throws {
         STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA
     }
+
     enum class Skills {
         ACROBATICS, ANIMAL_HANDLING, ARCANA, ATHLETICS, DECEPTION, HISTORY, INSIGHT, INTIMIDATION,
         INVESTIGATION, MEDICINE, NATURE, PERCEPTION, PERFORMANCE, PERSUASION, RELIGION,
         SLEIGHT_OF_HAND, STEALTH, SURVIVAL
-    }
-
-    fun setStatValue(stat: Stats, value: Int) {
-        stats[stat.ordinal] = value
     }
 }

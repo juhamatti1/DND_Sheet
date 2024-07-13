@@ -1,14 +1,10 @@
 package com.example.dnd_sheet
 
-import android.annotation.SuppressLint
-import android.content.Context
 import android.graphics.Rect
 import android.os.Bundle
-import android.os.Handler
 import android.view.MotionEvent
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -22,21 +18,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 
-    companion object {
-        @SuppressLint("StaticFieldLeak")
-        private lateinit var context: Context
-        private lateinit var handler: Handler
-
-        fun makeTextToast(text: String) {
-            handler.post { Toast.makeText(context, text, Toast.LENGTH_SHORT).show() }
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        context = applicationContext
-        handler = Handler(mainLooper)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -59,15 +43,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        // Hide keyboard if touching outside of any EditText views
         if (event.action == MotionEvent.ACTION_DOWN) {
-            val v = currentFocus
-            if (v is EditText) {
-                val outRect = Rect()
-                v.getGlobalVisibleRect(outRect)
-                if (!outRect.contains(event.rawX.toInt(), event.rawY.toInt())) {
-                    v.clearFocus()
+            val currentView = currentFocus
+            if (currentView is EditText) {
+                val viewRectangle = Rect()
+                currentView.getGlobalVisibleRect(viewRectangle)
+                if (!viewRectangle.contains(event.rawX.toInt(), event.rawY.toInt())) {
+                    currentView.clearFocus()
                     val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                    imm.hideSoftInputFromWindow(v.getWindowToken(), 0)
+                    imm.hideSoftInputFromWindow(currentView.getWindowToken(), 0)
                 }
             }
         }
