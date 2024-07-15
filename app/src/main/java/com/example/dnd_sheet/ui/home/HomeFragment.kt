@@ -40,6 +40,8 @@ class HomeFragment : Fragment() {
     private var _binding: FragmentHomeBinding? = null
     private val TAG: String = "HomeFragment"
     private lateinit var characterViewModel: Character
+    private val name = "character.json"
+
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -110,7 +112,7 @@ class HomeFragment : Fragment() {
                     bonusView.background.alpha = 50
                     bonusView.textSize = 20f
                     bonusView.gravity = Gravity.CENTER
-                    bonusView.text = "0"
+                    bonusView.text = calculateSubValue(stringToInt(mainStatEditText.text.toString())).toString()
 
                     // Listener to update bonus stats when main stat is edited
                     mainStatEditText.addTextChangedListener(afterTextChanged = listener@{ editedText: Editable? ->
@@ -124,13 +126,7 @@ class HomeFragment : Fragment() {
                             return@listener
                         }
 
-                        var subValue: Int = (mainValue - 10) / 2
-                        val fragmentValue = (mainValue - 10) % 2
-                        if (fragmentValue > 0) {
-                            subValue += 1
-                        } else if (fragmentValue < 0) {
-                            subValue -= 1
-                        }
+                        val subValue: Int = calculateSubValue(mainValue)
                         bonusView.text = subValue.toString()
 
                         cleanFrontZeros(mainStatEditText)
@@ -190,6 +186,29 @@ class HomeFragment : Fragment() {
                 setStartTopConstraints(statsLayout, proficiencyText, statsLayout, 152, 77)
             }
 
+            private fun stringToInt(text: String): Int {
+                val value: Int = try {
+                    text.toInt()
+                } catch (e: NumberFormatException) {
+                    val errorMessage = "Invalid number"
+                    Log.e(TAG, errorMessage)
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                    return Int.MIN_VALUE
+                }
+                return value
+            }
+
+            private fun calculateSubValue(mainValue: Int): Int {
+                var subValue: Int = (mainValue - 10) / 2
+                val fragmentValue = (mainValue - 10) % 2
+                if (fragmentValue > 0) {
+                    subValue += 1
+                } else if (fragmentValue < 0) {
+                    subValue -= 1
+                }
+                return subValue
+            }
+
             // -------------------------------------------------------------------------------------
             // HELPER FUNCTIONS --------------------------------------------------------------------
             // -------------------------------------------------------------------------------------
@@ -244,12 +263,9 @@ class HomeFragment : Fragment() {
         })
     }
 
-    val name = "character"
-
     override fun onPause() {
         super.onPause()
         val text = Json.encodeToString(characterViewModel)
-        println("WRITE:$text")
         requireContext().openFileOutput(name, Context.MODE_PRIVATE).use {
             it.write(text.toByteArray())
         }
@@ -257,6 +273,7 @@ class HomeFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        // Check if there is already local character file. Load it if yes
         val bytes: ByteArray
         try {
             requireContext().openFileInput(name).use {
@@ -264,10 +281,9 @@ class HomeFragment : Fragment() {
                 it.close()
             }
         } catch (e: FileNotFoundException) {
-            println("Can't find \"$name\" file")
+            Log.i(TAG, "Can't open \"$name\" file")
             return
         }
-        println("READ:${bytes.decodeToString()}")
         var character: Character? = null
         val error = kotlin.runCatching {
             character = Json.decodeFromString<Character>(bytes.decodeToString())
