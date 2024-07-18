@@ -1,6 +1,7 @@
 package com.example.dnd_sheet.ui.home
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -268,7 +269,17 @@ class HomeFragment : Fragment() {
         val text = Json.encodeToString(characterViewModel)
         requireContext().openFileOutput(name, Context.MODE_PRIVATE).use {
             it.write(text.toByteArray())
+            it.close()
         }
+
+        val sendIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, text) // Replace with your JSON data
+            setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            setPackage("com.google.android.apps.docs")
+            type = "text/plain"
+        }
+        startActivity(sendIntent)
     }
 
     override fun onResume() {
