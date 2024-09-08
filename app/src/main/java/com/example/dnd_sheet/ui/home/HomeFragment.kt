@@ -19,6 +19,8 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.RadioButton
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -27,13 +29,13 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.dnd_sheet.Character
+import com.example.dnd_sheet.Character.SavingThrows
 import com.example.dnd_sheet.Character.Stats
 import com.example.dnd_sheet.R
 import com.example.dnd_sheet.databinding.FragmentHomeBinding
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
-
 
 class HomeFragment : Fragment() {
 
@@ -42,6 +44,7 @@ class HomeFragment : Fragment() {
     private val TAG: String = "HomeFragment"
     private lateinit var characterViewModel: Character
     private val name = "character.json"
+    private lateinit var  scrollViewLayout : ScrollView
 
 
     // This property is only valid between onCreateView and
@@ -69,6 +72,8 @@ class HomeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        scrollViewLayout = view.findViewById(R.id.stats_scroll_view)
 
         val statsLayout: ConstraintLayout = view.findViewById(R.id.stats_layout)
         statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
@@ -99,92 +104,11 @@ class HomeFragment : Fragment() {
                 statsImageView.setImageBitmap(resizedBitmap)
                 statsLayout.addView(statsImageView)
 
-                // Creating edit text and text views for main and bonus stats
-                for(i in 0..5) {
-                    // Creating edit texts for main stats
-                    val mainStatEditText = createEditText(context, 75, 45, Stats.entries[i])
+                createMainStatsViews(context)
 
-                    // Creating text views for bonus stats
-                    val bonusView = TextView(context)
-                    bonusView.id = View.generateViewId()
-                    bonusView.width = dpToPx(40)
-                    bonusView.height = dpToPx(30)
-                    bonusView.setBackgroundColor(Color.BLUE)
-                    bonusView.background.alpha = 50
-                    bonusView.textSize = 20f
-                    bonusView.gravity = Gravity.CENTER
-                    bonusView.text = calculateSubValue(stringToInt(mainStatEditText.text.toString())).toString()
+                createInspirationAndProficiencyBonusViews(context)
 
-                    // Listener to update bonus stats when main stat is edited
-                    mainStatEditText.addTextChangedListener(afterTextChanged = listener@{ editedText: Editable? ->
-                        // Logic for increasing/decreasing stat bonus based on typed main value
-                        val mainValue: Int = try {
-                            editedText.toString().toInt()
-                        } catch (e: NumberFormatException) {
-                            val errorMessage = "Invalid number"
-                            Log.e(TAG, errorMessage)
-                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-                            return@listener
-                        }
-
-                        val subValue: Int = calculateSubValue(mainValue)
-                        bonusView.text = subValue.toString()
-
-                        cleanFrontZeros(mainStatEditText)
-
-                        val stat: Stats = Stats.values()[i]
-                        val toastText: String
-                        if(stat.equals(null)) {
-                            toastText = "Invalid stat id:${i}"
-                        } else {
-                            characterViewModel.stats[stat.ordinal] = mainValue
-                            toastText = "Set ${Stats.values()[i]} to ${characterViewModel.stats[stat.ordinal]}"
-                        }
-                        Toast.makeText(context,
-                            toastText,
-                            Toast.LENGTH_SHORT).show()
-                    })
-
-                    // Need to add views in order so views in front are added last
-                    statsLayout.addView(mainStatEditText)
-                    statsLayout.addView(bonusView)
-
-                    // Set constraints to views after views are added
-                    setStartTopConstraints(statsLayout, mainStatEditText, statsLayout, 45, 60 + i*130)
-                    setStartTopConstraints(statsLayout, bonusView, mainStatEditText, 16, 55)
-                }
-
-                class Listener(val statText: EditText, val stat: Stats) : TextWatcher {
-                    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-                    override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-                    override fun afterTextChanged(newText: Editable?) {
-                        val toastText: String
-                        val value: Int = try {
-                            newText.toString().toInt()
-                        } catch (e: NumberFormatException) {
-                            toastText = "Invalid number"
-                            Log.e(TAG, toastText)
-                            Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
-                            return
-                        }
-                        cleanFrontZeros(statText)
-                        characterViewModel.stats[stat.ordinal] = value
-                        toastText = "Set $stat to ${characterViewModel.stats[stat.ordinal]}"
-                        Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
-                    }
-                }
-
-                // Creating edit text for inspiration
-                val inspirationText = createEditText(context, 45, 40, Stats.INSPIRATION)
-                inspirationText.addTextChangedListener(Listener(inspirationText, Stats.INSPIRATION))
-                statsLayout.addView(inspirationText)
-                setStartTopConstraints(statsLayout, inspirationText, statsLayout, 150, 10)
-
-                // Creating edit text for proficiency bonus
-                val proficiencyText = createEditText(context, 45, 40, Stats.PROFICIENCY_BONUS)
-                proficiencyText.addTextChangedListener(Listener(proficiencyText, Stats.PROFICIENCY_BONUS))
-                statsLayout.addView(proficiencyText)
-                setStartTopConstraints(statsLayout, proficiencyText, statsLayout, 152, 77)
+                createSavingThrows(context)
             }
 
             private fun stringToInt(text: String): Int {
@@ -199,6 +123,96 @@ class HomeFragment : Fragment() {
                 return value
             }
 
+
+            // -------------------------------------------------------------------------------------
+            // HELPER FUNCTIONS --------------------------------------------------------------------
+            // -------------------------------------------------------------------------------------
+            private fun removeZerosFromBegin(editText: EditText) {
+                val textString = editText.text
+                if (textString[0] == '0' && textString.length > 1) {
+                    editText.setText(textString.removeRange(0, 1))
+                    // Set cursor to the end of edit text after removing "0"
+                    editText.setSelection(editText.length())
+                }
+            }
+
+            private fun createMainStatsViews(context: Context) {
+                for (i in 0 .. 5) {
+                    // Creating edit texts for main stats
+                    val mainStatEditText = createStatEditText(context, 75, 45, i)
+
+                    // Creating text views for bonus stats
+                    val bonusView = TextView(context)
+                    bonusView.id = View.generateViewId()
+                    bonusView.width = dpToPx(40)
+                    bonusView.height = dpToPx(30)
+                    bonusView.setBackgroundColor(Color.BLUE)
+                    bonusView.background.alpha = 50
+                    bonusView.textSize = 20f
+                    bonusView.gravity = Gravity.CENTER
+                    bonusView.text =
+                        calculateSubValue(stringToInt(mainStatEditText.text.toString())).toString()
+
+                    // Listener to update bonus stats when main stat is edited
+                    mainStatEditText.addTextChangedListener(afterTextChanged = listener@{ editedText: Editable? ->
+                        // Logic for increasing/decreasing stat bonus based on typed main value
+                        val mainValue: Int = stringToInt(editedText.toString())
+                        if(mainValue == Int.MIN_VALUE) {
+                            return@listener
+                        }
+
+                        val subValue: Int = calculateSubValue(mainValue)
+                        bonusView.text = subValue.toString()
+
+                        removeZerosFromBegin(mainStatEditText)
+
+                        val stat: Stats = Stats.entries[i]
+                        val toastText: String
+                        if (stat.equals(null)) {
+                            toastText = "Invalid stat id:${i}"
+                        } else {
+                            characterViewModel.stats[stat.ordinal] = mainValue
+                            toastText =
+                                "Set $i to ${characterViewModel.stats[stat.ordinal]}"
+                        }
+                        Toast.makeText(
+                            context,
+                            toastText,
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    })
+
+                    // Need to add views in order so views in front are added last
+                    statsLayout.addView(mainStatEditText)
+                    statsLayout.addView(bonusView)
+
+                    // Set constraints to views after views are added
+                    setStartTopConstraints(
+                        statsLayout,
+                        mainStatEditText,
+                        statsLayout,
+                        45,
+                        60 + i * 130
+                    )
+                    setStartTopConstraints(statsLayout, bonusView, mainStatEditText, 16, 55)
+                }
+            }
+
+            private fun createStatEditText(context: Context, width: Int, height: Int, i: Int): EditText {
+                val mainStatEditText = EditText(context)
+                mainStatEditText.id = View.generateViewId()
+                mainStatEditText.width = dpToPx(width)
+                mainStatEditText.height = dpToPx(height)
+                mainStatEditText.setBackgroundColor(Color.RED)
+                mainStatEditText.background.alpha = 50
+                mainStatEditText.textSize = 20f
+                mainStatEditText.gravity = Gravity.CENTER
+                mainStatEditText.inputType = InputType.TYPE_CLASS_NUMBER
+                mainStatEditText.setTextColor(Color.BLACK)
+                mainStatEditText.setText(characterViewModel.stats[i].toString())
+                return mainStatEditText
+            }
+
             private fun calculateSubValue(mainValue: Int): Int {
                 var subValue: Int = (mainValue - 10) / 2
                 val fragmentValue = (mainValue - 10) % 2
@@ -210,31 +224,109 @@ class HomeFragment : Fragment() {
                 return subValue
             }
 
-            // -------------------------------------------------------------------------------------
-            // HELPER FUNCTIONS --------------------------------------------------------------------
-            // -------------------------------------------------------------------------------------
-            private fun cleanFrontZeros(editText: EditText) {
-                val textString = editText.text
-                if (textString[0] == '0' && textString.length > 1) {
-                    editText.setText(textString.removeRange(0, 1))
-                    // Set cursor to the end of edit text after removing "0"
-                    editText.setSelection(editText.length())
+            private fun createInspirationAndProficiencyBonusViews(context: Context) {
+                class CharacterStatUpdater(val statText: EditText, val i: Int) : TextWatcher {
+                    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+                    override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+                    override fun afterTextChanged(newText: Editable?) {
+                        val toastText: String
+                        val value: Int = try {
+                            newText.toString().toInt()
+                        } catch (e: NumberFormatException) {
+                            toastText = "Invalid number"
+                            Log.e(TAG, toastText)
+                            Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
+                            return
+                        }
+                        removeZerosFromBegin(statText)
+                        characterViewModel.stats[i] = value
+                    }
+                }
+
+                // Creating edit text for inspiration
+                val inspirationText = createStatEditText(context, 45, 40, Stats.INSPIRATION.ordinal)
+                inspirationText.addTextChangedListener(CharacterStatUpdater(inspirationText, Stats.INSPIRATION.ordinal))
+                statsLayout.addView(inspirationText)
+                setStartTopConstraints(statsLayout, inspirationText, statsLayout, 150, 10)
+
+                // Creating edit text for proficiency bonus
+                val proficiencyText = createStatEditText(context, 45, 40, Stats.PROFICIENCY_BONUS.ordinal)
+                proficiencyText.addTextChangedListener(
+                    CharacterStatUpdater(
+                        proficiencyText,
+                        Stats.PROFICIENCY_BONUS.ordinal
+                    )
+                )
+                statsLayout.addView(proficiencyText)
+                setStartTopConstraints(statsLayout, proficiencyText, statsLayout, 152, 77)
+            }
+
+            private fun createSavingThrows(context: Context) {
+                class SavingThrowUpdater(val statText: EditText, val savingThrows: SavingThrows) : TextWatcher {
+                    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+                    override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+                    override fun afterTextChanged(newText: Editable?) {
+                        val value = stringToInt(newText.toString())
+                        if(value == Int.MIN_VALUE) {
+                            return
+                        }
+                        removeZerosFromBegin(statText)
+                        characterViewModel.savingThrows[savingThrows.ordinal] = value
+                    }
+                }
+
+                // Creating edit texts for saving throws
+                for(savingThrow in SavingThrows.entries) {
+                    val proficiencyButton = createSavingThrowRadioButton(context, 30, 30, savingThrow.ordinal)
+                    val status = proficiencyButton.isChecked
+                    proficiencyButton.setOnClickListener(object : View.OnClickListener {
+                        var m_previousStatus: Boolean = status
+
+                        override fun onClick(p0: View?) {
+                            val button = p0 as RadioButton
+                            if(m_previousStatus == button.isChecked) {
+                                m_previousStatus = !button.isChecked
+                            } else {
+                                m_previousStatus = button.isChecked
+                            }
+                            button.isChecked = m_previousStatus
+                            characterViewModel.proficiencyBonuses[savingThrow.ordinal] = m_previousStatus
+                        }
+                    })
+                    statsLayout.addView(proficiencyButton)
+                    setStartTopConstraints(statsLayout, proficiencyButton, statsLayout, 151, 148 + (savingThrow.ordinal * 24.9).toInt())
+
+                    val savingThrowView = createSavingThrowEditText(context, 30, 10, savingThrow.ordinal)
+                    savingThrowView.addTextChangedListener(SavingThrowUpdater(savingThrowView, savingThrow))
+                    statsLayout.addView(savingThrowView)
+                    setStartTopConstraints(statsLayout, savingThrowView, statsLayout, 180, 143 + savingThrow.ordinal * 25)
                 }
             }
 
-            private fun createEditText(context: Context, width: Int, height: Int, stat: Stats): EditText {
-                val mainStatEditText = EditText(context)
-                mainStatEditText.id = View.generateViewId()
-                mainStatEditText.width = dpToPx(width)
-                mainStatEditText.height = dpToPx(height)
-                mainStatEditText.setBackgroundColor(Color.RED)
-                mainStatEditText.background.alpha = 50
-                mainStatEditText.textSize = 20f
-                mainStatEditText.gravity = Gravity.CENTER
-                mainStatEditText.inputType = InputType.TYPE_CLASS_NUMBER
-                mainStatEditText.setTextColor(Color.BLACK)
-                mainStatEditText.setText(characterViewModel.stats[stat.ordinal].toString())
-                return mainStatEditText
+            private fun createSavingThrowRadioButton(context: Context, width: Int, height: Int, i: Int): RadioButton {
+                val radioButton = RadioButton(context)
+                radioButton.id = View.generateViewId()
+                radioButton.width = dpToPx(width)
+                radioButton.height = dpToPx(height)
+                radioButton.setBackgroundColor(Color.RED)
+                radioButton.background.alpha = 50
+                radioButton.isChecked = characterViewModel.proficiencyBonuses[i]
+                return radioButton
+            }
+
+            private fun createSavingThrowEditText(context: Context, width: Int, height: Int, i: Int): EditText {
+                val editTextView = EditText(context)
+                editTextView.id = View.generateViewId()
+                editTextView.width = dpToPx(width)
+                editTextView.height = dpToPx(height)
+                editTextView.setBackgroundColor(Color.RED)
+                editTextView.background.alpha = 50
+                editTextView.textSize = 14f
+                editTextView.gravity = Gravity.CENTER
+                editTextView.inputType = InputType.TYPE_CLASS_NUMBER
+                editTextView.setTextColor(Color.BLACK)
+                editTextView.setText(characterViewModel.savingThrows[i].toString())
+                return editTextView
             }
 
             private fun setStartTopConstraints(layout: ConstraintLayout, firstView: View,
@@ -264,14 +356,13 @@ class HomeFragment : Fragment() {
         })
     }
 
-    override fun onPause() {
-        super.onPause()
-        val text = Json.encodeToString(characterViewModel)
-        requireContext().openFileOutput(name, Context.MODE_PRIVATE).use {
-            it.write(text.toByteArray())
-            it.close()
-        }
+    override fun onStop() {
+        super.onStop()
+        saveToJson()
+        //saveToGoogleDocs(text)
+    }
 
+    private fun saveToGoogleDocs(text: String) {
         val sendIntent = Intent().apply {
             action = Intent.ACTION_SEND
             putExtra(Intent.EXTRA_TEXT, text) // Replace with your JSON data
@@ -282,9 +373,17 @@ class HomeFragment : Fragment() {
         startActivity(sendIntent)
     }
 
-    override fun onResume() {
-        super.onResume()
-        // Check if there is already local character file. Load it if yes
+    private fun saveToJson() : String {
+        val text = Json.encodeToString(characterViewModel)
+        requireContext().openFileOutput(name, Context.MODE_PRIVATE).use {
+            it.write(text.toByteArray())
+            it.close()
+        }
+        return text
+    }
+
+
+    private fun loadFromJson(): Boolean {
         val bytes: ByteArray
         try {
             requireContext().openFileInput(name).use {
@@ -292,18 +391,25 @@ class HomeFragment : Fragment() {
                 it.close()
             }
         } catch (e: FileNotFoundException) {
-            Log.i(TAG, "Can't open \"$name\" file")
-            return
+            Log.w(TAG, "\"$name\" file not found")
+            return false
         }
         var character: Character? = null
         val error = kotlin.runCatching {
             character = Json.decodeFromString<Character>(bytes.decodeToString())
         }
-        if(character == null) {
-            println(error.exceptionOrNull())
-            return
+        if(character == null || error.isFailure) {
+            Log.e(TAG, error.exceptionOrNull().toString())
+            return false
         }
         characterViewModel = character as Character
+        return true
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Check if there is already local character file. Load it if yes
+        loadFromJson()
     }
 
     override fun onDestroyView() {

@@ -14,6 +14,8 @@ class Character : ViewModel() {
 //    var experience: Float = 0f
 
     val stats = IntArray(Stats.entries.size) { 0 }
+    val savingThrows = IntArray(SavingThrows.entries.size) { 0 }
+    val proficiencyBonuses = BooleanArray(SavingThrows.entries.size) { false }
 
 //    lateinit var saving_throws: HashMap<Saving_throws, Int>
 //    lateinit var skills: HashMap<Skills, Boolean>
@@ -31,9 +33,9 @@ class Character : ViewModel() {
 //        DRAGONBORN, DWARF, ELF, GNOME, HALF_ELF, HALFLING, HALF_ORC, HUMAN, TIEFLING
 //    }
 
-//    enum class Saving_throws {
-//        STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA
-//    }
+    enum class SavingThrows {
+        STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA
+    }
 
 //    enum class Skills {
 //        ACROBATICS, ANIMAL_HANDLING, ARCANA, ATHLETICS, DECEPTION, HISTORY, INSIGHT, INTIMIDATION,
