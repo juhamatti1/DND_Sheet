@@ -30,6 +30,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.dnd_sheet.Character
 import com.example.dnd_sheet.Character.SavingThrows
+import com.example.dnd_sheet.Character.Skills
 import com.example.dnd_sheet.Character.Stats
 import com.example.dnd_sheet.R
 import com.example.dnd_sheet.databinding.FragmentHomeBinding
@@ -109,6 +110,8 @@ class HomeFragment : Fragment() {
                 createInspirationAndProficiencyBonusViews(context)
 
                 createSavingThrows(context)
+
+                createSkills(context)
             }
 
             private fun stringToInt(text: String): Int {
@@ -116,8 +119,7 @@ class HomeFragment : Fragment() {
                     text.toInt()
                 } catch (e: NumberFormatException) {
                     val errorMessage = "Invalid number"
-                    Log.e(TAG, errorMessage)
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                    Log.w(TAG, errorMessage)
                     return Int.MIN_VALUE
                 }
                 return value
@@ -277,7 +279,7 @@ class HomeFragment : Fragment() {
 
                 // Creating edit texts for saving throws
                 for(savingThrow in SavingThrows.entries) {
-                    val proficiencyButton = createSavingThrowRadioButton(context, 30, 30, savingThrow.ordinal)
+                    val proficiencyButton = createSavingThrowsProficiencyRadioButton(context, 30, 30, savingThrow.ordinal)
                     val status = proficiencyButton.isChecked
                     proficiencyButton.setOnClickListener(object : View.OnClickListener {
                         var m_previousStatus: Boolean = status
@@ -290,31 +292,85 @@ class HomeFragment : Fragment() {
                                 m_previousStatus = button.isChecked
                             }
                             button.isChecked = m_previousStatus
-                            characterViewModel.proficiencyBonuses[savingThrow.ordinal] = m_previousStatus
+                            characterViewModel.savingThrowProficiencyBonuses[savingThrow.ordinal] = m_previousStatus
                         }
                     })
                     statsLayout.addView(proficiencyButton)
                     setStartTopConstraints(statsLayout, proficiencyButton, statsLayout, 151, 148 + (savingThrow.ordinal * 24.9).toInt())
 
-                    val savingThrowView = createSavingThrowEditText(context, 30, 10, savingThrow.ordinal)
+                    val savingThrowView = createSavingThrowsEditText(context, 30, 10, savingThrow.ordinal)
                     savingThrowView.addTextChangedListener(SavingThrowUpdater(savingThrowView, savingThrow))
                     statsLayout.addView(savingThrowView)
-                    setStartTopConstraints(statsLayout, savingThrowView, statsLayout, 180, 143 + savingThrow.ordinal * 25)
+                    setStartTopConstraints(statsLayout, savingThrowView, statsLayout, 180, 143 + (savingThrow.ordinal * 24.9).toInt())
                 }
             }
 
-            private fun createSavingThrowRadioButton(context: Context, width: Int, height: Int, i: Int): RadioButton {
+            private fun createSkills(context: Context) {
+                class SkillsUpdater(val statText: EditText, val skills: Skills) : TextWatcher {
+                    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+                    override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+                    override fun afterTextChanged(newText: Editable?) {
+                        val value = stringToInt(newText.toString())
+                        if(value == Int.MIN_VALUE) {
+                            return
+                        }
+                        removeZerosFromBegin(statText)
+                        characterViewModel.skills[skills.ordinal] = value
+                    }
+                }
+
+                // Creating edit texts for skills
+                for(skills in Skills.entries) {
+                    val proficiencyButton = createSkillsProficiencyRadioButton(context, 30, 30, skills.ordinal)
+                    val status = proficiencyButton.isChecked
+                    proficiencyButton.setOnClickListener(object : View.OnClickListener {
+                        var m_previousStatus: Boolean = status
+
+                        override fun onClick(p0: View?) {
+                            val button = p0 as RadioButton
+                            if(m_previousStatus == button.isChecked) {
+                                m_previousStatus = !button.isChecked
+                            } else {
+                                m_previousStatus = button.isChecked
+                            }
+                            button.isChecked = m_previousStatus
+                            characterViewModel.skillsProficiencyBonuses[skills.ordinal] = m_previousStatus
+                        }
+                    })
+                    statsLayout.addView(proficiencyButton)
+                    setStartTopConstraints(statsLayout, proficiencyButton, statsLayout, 151, 358 + (skills.ordinal * 24.7).toInt())
+
+                    val skillsView = createSkillsEditText(context, 30, 10, skills.ordinal)
+                    skillsView.addTextChangedListener(SkillsUpdater(skillsView, skills))
+                    statsLayout.addView(skillsView)
+                    setStartTopConstraints(statsLayout, skillsView, statsLayout, 180, 354 + (skills.ordinal * 24.6).toInt())
+                }
+            }
+
+            // ToDo: Merge createSkillsProficiencyRadioButton and createSavingThrowsProficiencyRadioButton to single method
+            private fun createSkillsProficiencyRadioButton(context: Context, width: Int, height: Int, i: Int): RadioButton {
                 val radioButton = RadioButton(context)
                 radioButton.id = View.generateViewId()
                 radioButton.width = dpToPx(width)
                 radioButton.height = dpToPx(height)
                 radioButton.setBackgroundColor(Color.RED)
                 radioButton.background.alpha = 50
-                radioButton.isChecked = characterViewModel.proficiencyBonuses[i]
+                radioButton.isChecked = characterViewModel.skillsProficiencyBonuses[i]
                 return radioButton
             }
 
-            private fun createSavingThrowEditText(context: Context, width: Int, height: Int, i: Int): EditText {
+            private fun createSavingThrowsProficiencyRadioButton(context: Context, width: Int, height: Int, i: Int): RadioButton {
+                val radioButton = RadioButton(context)
+                radioButton.id = View.generateViewId()
+                radioButton.width = dpToPx(width)
+                radioButton.height = dpToPx(height)
+                radioButton.setBackgroundColor(Color.RED)
+                radioButton.background.alpha = 50
+                radioButton.isChecked = characterViewModel.savingThrowProficiencyBonuses[i]
+                return radioButton
+            }
+
+            private fun createSavingThrowsEditText(context: Context, width: Int, height: Int, i: Int): EditText {
                 val editTextView = EditText(context)
                 editTextView.id = View.generateViewId()
                 editTextView.width = dpToPx(width)
@@ -326,6 +382,21 @@ class HomeFragment : Fragment() {
                 editTextView.inputType = InputType.TYPE_CLASS_NUMBER
                 editTextView.setTextColor(Color.BLACK)
                 editTextView.setText(characterViewModel.savingThrows[i].toString())
+                return editTextView
+            }
+
+            private fun createSkillsEditText(context: Context, width: Int, height: Int, i: Int): EditText {
+                val editTextView = EditText(context)
+                editTextView.id = View.generateViewId()
+                editTextView.width = dpToPx(width)
+                editTextView.height = dpToPx(height)
+                editTextView.setBackgroundColor(Color.RED)
+                editTextView.background.alpha = 50
+                editTextView.textSize = 14f
+                editTextView.gravity = Gravity.CENTER
+                editTextView.inputType = InputType.TYPE_CLASS_NUMBER
+                editTextView.setTextColor(Color.BLACK)
+                editTextView.setText(characterViewModel.skills[i].toString())
                 return editTextView
             }
 

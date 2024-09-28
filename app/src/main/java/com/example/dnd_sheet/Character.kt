@@ -15,7 +15,9 @@ class Character : ViewModel() {
 
     val stats = IntArray(Stats.entries.size) { 0 }
     val savingThrows = IntArray(SavingThrows.entries.size) { 0 }
-    val proficiencyBonuses = BooleanArray(SavingThrows.entries.size) { false }
+    val skills = IntArray(Skills.entries.size) { 0 }
+    val savingThrowProficiencyBonuses = BooleanArray(SavingThrows.entries.size) { false }
+    val skillsProficiencyBonuses = BooleanArray(Skills.entries.size) { false }
 
 //    lateinit var saving_throws: HashMap<Saving_throws, Int>
 //    lateinit var skills: HashMap<Skills, Boolean>
@@ -37,9 +39,9 @@ class Character : ViewModel() {
         STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA
     }
 
-//    enum class Skills {
-//        ACROBATICS, ANIMAL_HANDLING, ARCANA, ATHLETICS, DECEPTION, HISTORY, INSIGHT, INTIMIDATION,
-//        INVESTIGATION, MEDICINE, NATURE, PERCEPTION, PERFORMANCE, PERSUASION, RELIGION,
-//        SLEIGHT_OF_HAND, STEALTH, SURVIVAL
-//    }
+    enum class Skills {
+        ACROBATICS, ANIMAL_HANDLING, ARCANA, ATHLETICS, DECEPTION, HISTORY, INSIGHT, INTIMIDATION,
+        INVESTIGATION, MEDICINE, NATURE, PERCEPTION, PERFORMANCE, PERSUASION, RELIGION,
+        SLEIGHT_OF_HAND, STEALTH, SURVIVAL
+    }
 }
