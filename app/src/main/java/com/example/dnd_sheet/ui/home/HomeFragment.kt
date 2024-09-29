@@ -16,15 +16,19 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.ViewTreeObserver
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.RadioButton
+import android.widget.RelativeLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.widget.NestedScrollView
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -393,23 +397,35 @@ class HomeFragment : Fragment() {
             }
 
             private fun createProficienciesAndLanguages(context: Context) {
+
+                var layout = RelativeLayout(context)
+                layout.id = View.generateViewId()
+                layout.layoutParams = ViewGroup.LayoutParams(dpToPx(307), dpToPx(245))
+                statsLayout.addView(layout)
+                setStartTopConstraints(statsLayout, layout, statsLayout, 36, 915)
+
+                var nestedScrollView = NestedScrollView(context)
+                nestedScrollView.id = View.generateViewId()
+                nestedScrollView.isFillViewport = false
+                nestedScrollView.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
+
+                layout.addView(nestedScrollView)
+                setStartTopConstraints(statsLayout, nestedScrollView, statsLayout, 36, 915)
+
                 val editText = EditText(context)
                 editText.id = View.generateViewId()
-                editText.width = dpToPx(315)
-                editText.height = dpToPx(258)
+                editText.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
                 editText.setBackgroundColor(Color.RED)
                 editText.background.alpha = 50
+                editText.setTextColor(Color.BLACK)
                 editText.textSize = 20f
                 editText.gravity = Gravity.START or Gravity.TOP
-                editText.setTextColor(Color.BLACK)
                 editText.setText(characterViewModel.proficienciesAndLanguages)
-
-                editText.addTextChangedListener (afterTextChanged = listener@{ editedText: Editable? ->
+                editText.addTextChangedListener (afterTextChanged = { editedText: Editable? ->
                     characterViewModel.proficienciesAndLanguages = editedText.toString()
                 })
-
-                statsLayout.addView(editText)
-                setStartTopConstraints(statsLayout, editText, statsLayout, 36, 910)
+                nestedScrollView.addView(editText)
+                setStartTopConstraints(statsLayout, editText, nestedScrollView, 0, 0)
             }
 
             private fun setStartTopConstraints(layout: ConstraintLayout, firstView: View,
