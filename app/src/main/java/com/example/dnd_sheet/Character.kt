@@ -18,22 +18,16 @@ class Character : ViewModel() {
     val skills = IntArray(Skills.entries.size) { 0 }
     val savingThrowProficiencyBonuses = BooleanArray(SavingThrows.entries.size) { false }
     val skillsProficiencyBonuses = BooleanArray(Skills.entries.size) { false }
+    var proficienciesAndLanguages = ""
 
 //    lateinit var saving_throws: HashMap<Saving_throws, Int>
 //    lateinit var skills: HashMap<Skills, Boolean>
 
+    enum class StatType { Stats, SavingThrows, Skills }
+
     enum class Stats {
         STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA, INSPIRATION, PROFICIENCY_BONUS, PASSIVE_WISDOM
     }
-
-//    enum class DND_classes {
-//        BARBARIAN, BARD, CLERIC, DRUID, FIGHTER, MONK, PALADIN, RANGER, ROGUE, SORCERER, WARLOCK,
-//        WIZARD
-//    }
-
-//    enum class Races {
-//        DRAGONBORN, DWARF, ELF, GNOME, HALF_ELF, HALFLING, HALF_ORC, HUMAN, TIEFLING
-//    }
 
     enum class SavingThrows {
         STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA
@@ -44,4 +38,13 @@ class Character : ViewModel() {
         INVESTIGATION, MEDICINE, NATURE, PERCEPTION, PERFORMANCE, PERSUASION, RELIGION,
         SLEIGHT_OF_HAND, STEALTH, SURVIVAL
     }
+
+//    enum class DND_classes {
+//        BARBARIAN, BARD, CLERIC, DRUID, FIGHTER, MONK, PALADIN, RANGER, ROGUE, SORCERER, WARLOCK,
+//        WIZARD
+//    }
+
+//    enum class Races {
+//        DRAGONBORN, DWARF, ELF, GNOME, HALF_ELF, HALFLING, HALF_ORC, HUMAN, TIEFLING
+//    }
 }

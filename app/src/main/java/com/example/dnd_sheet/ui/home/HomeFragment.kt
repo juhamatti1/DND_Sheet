@@ -31,6 +31,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.dnd_sheet.Character
 import com.example.dnd_sheet.Character.SavingThrows
 import com.example.dnd_sheet.Character.Skills
+import com.example.dnd_sheet.Character.StatType
 import com.example.dnd_sheet.Character.Stats
 import com.example.dnd_sheet.R
 import com.example.dnd_sheet.databinding.FragmentHomeBinding
@@ -112,6 +113,10 @@ class HomeFragment : Fragment() {
                 createSavingThrows(context)
 
                 createSkills(context)
+
+                createPassiveWisdom(context)
+
+                createProficienciesAndLanguages(context)
             }
 
             private fun stringToInt(text: String): Int {
@@ -120,7 +125,7 @@ class HomeFragment : Fragment() {
                 } catch (e: NumberFormatException) {
                     val errorMessage = "Invalid number"
                     Log.w(TAG, errorMessage)
-                    return Int.MIN_VALUE
+                    return Int.MIN_VALUE;
                 }
                 return value
             }
@@ -141,7 +146,7 @@ class HomeFragment : Fragment() {
             private fun createMainStatsViews(context: Context) {
                 for (i in 0 .. 5) {
                     // Creating edit texts for main stats
-                    val mainStatEditText = createStatEditText(context, 75, 45, i)
+                    val mainStatEditText = createEditText(context, 75, 45, StatType.Stats, i)
 
                     // Creating text views for bonus stats
                     val bonusView = TextView(context)
@@ -169,19 +174,9 @@ class HomeFragment : Fragment() {
                         removeZerosFromBegin(mainStatEditText)
 
                         val stat: Stats = Stats.entries[i]
-                        val toastText: String
-                        if (stat.equals(null)) {
-                            toastText = "Invalid stat id:${i}"
-                        } else {
+                        if (!stat.equals(null)) {
                             characterViewModel.stats[stat.ordinal] = mainValue
-                            toastText =
-                                "Set $i to ${characterViewModel.stats[stat.ordinal]}"
                         }
-                        Toast.makeText(
-                            context,
-                            toastText,
-                            Toast.LENGTH_SHORT
-                        ).show()
                     })
 
                     // Need to add views in order so views in front are added last
@@ -198,21 +193,6 @@ class HomeFragment : Fragment() {
                     )
                     setStartTopConstraints(statsLayout, bonusView, mainStatEditText, 16, 55)
                 }
-            }
-
-            private fun createStatEditText(context: Context, width: Int, height: Int, i: Int): EditText {
-                val mainStatEditText = EditText(context)
-                mainStatEditText.id = View.generateViewId()
-                mainStatEditText.width = dpToPx(width)
-                mainStatEditText.height = dpToPx(height)
-                mainStatEditText.setBackgroundColor(Color.RED)
-                mainStatEditText.background.alpha = 50
-                mainStatEditText.textSize = 20f
-                mainStatEditText.gravity = Gravity.CENTER
-                mainStatEditText.inputType = InputType.TYPE_CLASS_NUMBER
-                mainStatEditText.setTextColor(Color.BLACK)
-                mainStatEditText.setText(characterViewModel.stats[i].toString())
-                return mainStatEditText
             }
 
             private fun calculateSubValue(mainValue: Int): Int {
@@ -246,13 +226,13 @@ class HomeFragment : Fragment() {
                 }
 
                 // Creating edit text for inspiration
-                val inspirationText = createStatEditText(context, 45, 40, Stats.INSPIRATION.ordinal)
+                val inspirationText = createEditText(context, 45, 40, StatType.Stats, Stats.INSPIRATION.ordinal)
                 inspirationText.addTextChangedListener(CharacterStatUpdater(inspirationText, Stats.INSPIRATION.ordinal))
                 statsLayout.addView(inspirationText)
                 setStartTopConstraints(statsLayout, inspirationText, statsLayout, 150, 10)
 
                 // Creating edit text for proficiency bonus
-                val proficiencyText = createStatEditText(context, 45, 40, Stats.PROFICIENCY_BONUS.ordinal)
+                val proficiencyText = createEditText(context, 45, 40, StatType.Stats, Stats.PROFICIENCY_BONUS.ordinal)
                 proficiencyText.addTextChangedListener(
                     CharacterStatUpdater(
                         proficiencyText,
@@ -298,7 +278,7 @@ class HomeFragment : Fragment() {
                     statsLayout.addView(proficiencyButton)
                     setStartTopConstraints(statsLayout, proficiencyButton, statsLayout, 151, 148 + (savingThrow.ordinal * 24.9).toInt())
 
-                    val savingThrowView = createSavingThrowsEditText(context, 30, 10, savingThrow.ordinal)
+                    val savingThrowView = createEditText(context, 30, 10, StatType.SavingThrows, savingThrow.ordinal)
                     savingThrowView.addTextChangedListener(SavingThrowUpdater(savingThrowView, savingThrow))
                     statsLayout.addView(savingThrowView)
                     setStartTopConstraints(statsLayout, savingThrowView, statsLayout, 180, 143 + (savingThrow.ordinal * 24.9).toInt())
@@ -340,11 +320,33 @@ class HomeFragment : Fragment() {
                     statsLayout.addView(proficiencyButton)
                     setStartTopConstraints(statsLayout, proficiencyButton, statsLayout, 151, 358 + (skills.ordinal * 24.7).toInt())
 
-                    val skillsView = createSkillsEditText(context, 30, 10, skills.ordinal)
+                    val skillsView = createEditText(context, 30, 10, StatType.Skills,  skills.ordinal)
                     skillsView.addTextChangedListener(SkillsUpdater(skillsView, skills))
                     statsLayout.addView(skillsView)
                     setStartTopConstraints(statsLayout, skillsView, statsLayout, 180, 354 + (skills.ordinal * 24.6).toInt())
                 }
+            }
+
+            private fun createPassiveWisdom(context: Context) {
+                class CharacterStatUpdater(val statText: EditText, val i: Int) : TextWatcher {
+                    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+                    override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+                    override fun afterTextChanged(newText: Editable?) {
+                        val value: Int = try {
+                            newText.toString().toInt()
+                        } catch (e: NumberFormatException) {
+                            return
+                        }
+                        removeZerosFromBegin(statText)
+                        characterViewModel.stats[i] = value
+                    }
+                }
+
+                // Creating edit text for passive wisdom
+                val passiveWisdomText = createEditText(context, 45, 40, StatType.Skills, Stats.PASSIVE_WISDOM.ordinal)
+                passiveWisdomText.addTextChangedListener(CharacterStatUpdater(passiveWisdomText, Stats.PASSIVE_WISDOM.ordinal))
+                statsLayout.addView(passiveWisdomText)
+                setStartTopConstraints(statsLayout, passiveWisdomText, statsLayout, 32, 848)
             }
 
             // ToDo: Merge createSkillsProficiencyRadioButton and createSavingThrowsProficiencyRadioButton to single method
@@ -370,7 +372,7 @@ class HomeFragment : Fragment() {
                 return radioButton
             }
 
-            private fun createSavingThrowsEditText(context: Context, width: Int, height: Int, i: Int): EditText {
+            private fun createEditText(context: Context, width: Int, height: Int, type: StatType, i: Int): EditText {
                 val editTextView = EditText(context)
                 editTextView.id = View.generateViewId()
                 editTextView.width = dpToPx(width)
@@ -381,23 +383,33 @@ class HomeFragment : Fragment() {
                 editTextView.gravity = Gravity.CENTER
                 editTextView.inputType = InputType.TYPE_CLASS_NUMBER
                 editTextView.setTextColor(Color.BLACK)
-                editTextView.setText(characterViewModel.savingThrows[i].toString())
+
+                when(type) {
+                    StatType.Skills -> editTextView.setText(characterViewModel.skills[i].toString())
+                    StatType.Stats -> editTextView.setText(characterViewModel.stats[i].toString())
+                    StatType.SavingThrows -> editTextView.setText(characterViewModel.savingThrows[i].toString())
+                }
                 return editTextView
             }
 
-            private fun createSkillsEditText(context: Context, width: Int, height: Int, i: Int): EditText {
-                val editTextView = EditText(context)
-                editTextView.id = View.generateViewId()
-                editTextView.width = dpToPx(width)
-                editTextView.height = dpToPx(height)
-                editTextView.setBackgroundColor(Color.RED)
-                editTextView.background.alpha = 50
-                editTextView.textSize = 14f
-                editTextView.gravity = Gravity.CENTER
-                editTextView.inputType = InputType.TYPE_CLASS_NUMBER
-                editTextView.setTextColor(Color.BLACK)
-                editTextView.setText(characterViewModel.skills[i].toString())
-                return editTextView
+            private fun createProficienciesAndLanguages(context: Context) {
+                val editText = EditText(context)
+                editText.id = View.generateViewId()
+                editText.width = dpToPx(315)
+                editText.height = dpToPx(258)
+                editText.setBackgroundColor(Color.RED)
+                editText.background.alpha = 50
+                editText.textSize = 20f
+                editText.gravity = Gravity.START or Gravity.TOP
+                editText.setTextColor(Color.BLACK)
+                editText.setText(characterViewModel.proficienciesAndLanguages)
+
+                editText.addTextChangedListener (afterTextChanged = listener@{ editedText: Editable? ->
+                    characterViewModel.proficienciesAndLanguages = editedText.toString()
+                })
+
+                statsLayout.addView(editText)
+                setStartTopConstraints(statsLayout, editText, statsLayout, 36, 910)
             }
 
             private fun setStartTopConstraints(layout: ConstraintLayout, firstView: View,
