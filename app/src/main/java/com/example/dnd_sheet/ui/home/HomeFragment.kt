@@ -110,6 +110,11 @@ class HomeFragment : Fragment() {
                 statsImageView.setImageBitmap(resizedBitmap)
                 statsLayout.addView(statsImageView)
 
+                statsLayout.minHeight = resizedBitmap.height
+
+                val w = statsLayout.width
+                val h = statsLayout.minHeight
+
                 createMainStatsViews(context)
 
                 createInspirationAndProficiencyBonusViews(context)
@@ -188,13 +193,14 @@ class HomeFragment : Fragment() {
                     statsLayout.addView(bonusView)
 
                     // Set constraints to views after views are added
-                    setStartTopConstraints(
-                        statsLayout,
-                        mainStatEditText,
-                        statsLayout,
-                        45,
-                        60 + i * 130
-                    )
+                    setViewToConstraintLayout(statsLayout, mainStatEditText, 0.2 to (0.2 + i * 0.1))
+//                    setStartTopConstraints(
+//                        statsLayout,
+//                        mainStatEditText,
+//                        statsLayout,
+//                        45,
+//                        60 + i * 130
+//                    )
                     setStartTopConstraints(statsLayout, bonusView, mainStatEditText, 16, 55)
                 }
             }
@@ -459,6 +465,30 @@ class HomeFragment : Fragment() {
         super.onStop()
         saveToJson()
         //saveToGoogleDocs(text)
+    }
+
+    private fun setViewToConstraintLayout(layout: ConstraintLayout, view: View, position: Pair<Double, Double>) {
+        val widthPx = layout.width
+        val heightP = layout.minHeight
+
+        // Position is % value, in x axis 0 is left, 1 is right, in y axis 0 is top, 1 is bottom
+        val posX = (position.first * widthPx).toInt()
+        val posY = (position.second * heightP).toInt()
+
+        val constraintSet = ConstraintSet()
+        constraintSet.clone(layout)
+        // Constraint in horizontal
+        constraintSet.connect(
+            layout.id, ConstraintSet.START,
+            view.id, ConstraintSet.START,
+            posX)
+
+        // Constraint in vertical
+        constraintSet.connect(
+            layout.id, ConstraintSet.TOP,
+            view.id, ConstraintSet.TOP,
+            posY)
+        constraintSet.applyTo(layout)
     }
 
     private fun saveToGoogleDocs(text: String) {
