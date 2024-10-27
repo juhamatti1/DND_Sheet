@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 class Character : ViewModel() {
-    val TAG = "CHARACTER"
     var name: String = ""
     // Need to comment these until they are actually used for serialization
 //    lateinit var primary_class: DND_classes
@@ -16,8 +15,8 @@ class Character : ViewModel() {
     val stats = IntArray(Stats.entries.size) { 0 }
     val savingThrows = IntArray(SavingThrows.entries.size) { 0 }
     val skills = IntArray(Skills.entries.size) { 0 }
-    val savingThrowProficiencyBonuses = BooleanArray(SavingThrows.entries.size) { false }
     val skillsProficiencyBonuses = BooleanArray(Skills.entries.size) { false }
+    val savingThrowProficiencyBonuses = BooleanArray(SavingThrows.entries.size) { false }
     var proficienciesAndLanguages = ""
 
 //    lateinit var saving_throws: HashMap<Saving_throws, Int>

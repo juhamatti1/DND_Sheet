@@ -11,19 +11,16 @@ import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
-import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.ViewTreeObserver
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.RelativeLayout
-import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -50,7 +47,8 @@ class HomeFragment : Fragment() {
     private val TAG: String = "HomeFragment"
     private lateinit var characterViewModel: Character
     private val name = "character.json"
-    private lateinit var  scrollViewLayout : ScrollView
+    private lateinit var  m_statsLayout : ConstraintLayout
+    private lateinit var m_statsSize : Pair<Int, Int>
 
 
     // This property is only valid between onCreateView and
@@ -79,18 +77,17 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        scrollViewLayout = view.findViewById(R.id.stats_scroll_view)
+        m_statsLayout = view.findViewById(R.id.stats_layout)
 
-        val statsLayout: ConstraintLayout = view.findViewById(R.id.stats_layout)
-        statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+        m_statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 //Remove the listener before proceeding
-                statsLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                m_statsLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
 
                 // Change layout width x height ratio to match background image
                 val statsBitmap = BitmapFactory.decodeResource(resources, R.drawable.stats)
 
-                val layoutWidth = statsLayout.measuredWidth
+                val layoutWidth = m_statsLayout.measuredWidth
 
                 // Using matrix to scale imageview to fit nicely to layout
                 val matrix = Matrix()
@@ -108,12 +105,10 @@ class HomeFragment : Fragment() {
                 val statsImageView = ImageView(context)
                 statsImageView.id = View.generateViewId()
                 statsImageView.setImageBitmap(resizedBitmap)
-                statsLayout.addView(statsImageView)
+                m_statsLayout.addView(statsImageView)
 
-                statsLayout.minHeight = resizedBitmap.height
-
-                val w = statsLayout.width
-                val h = statsLayout.minHeight
+                m_statsSize = resizedBitmap.width to resizedBitmap.height
+                m_statsSize.first.toDouble() / m_statsSize.second.toDouble()
 
                 createMainStatsViews(context)
 
@@ -126,15 +121,38 @@ class HomeFragment : Fragment() {
                 createPassiveWisdom(context)
 
                 createProficienciesAndLanguages(context)
+
+                // drawing grid
+//                val canvas = Canvas(resizedBitmap)
+//                val paint = Paint()
+//                paint.color = Color.BLUE
+//                paint.strokeWidth = 5f
+//                paint.alpha = 60
+//                for(i in 1..9) {
+//
+//                    var startX = 0f
+//                    var startY = i.toFloat()*0.1f * m_statsSize.second.toFloat()
+//                    var endX = m_statsSize.first.toFloat()
+//                    var endY = startY
+//
+//                    canvas.drawLine(startX, startY, endX, endY, paint)
+//
+//                    startY = 0f
+//                    startX = i*0.1f * m_statsSize.first.toFloat()
+//                    endY = m_statsSize.second.toFloat()
+//                    endX = startX
+//
+//                    canvas.drawLine(startX, startY, endX, endY, paint)
+//                }
+//                statsImageView.invalidate()
             }
 
             private fun stringToInt(text: String): Int {
                 val value: Int = try {
                     text.toInt()
                 } catch (e: NumberFormatException) {
-                    val errorMessage = "Invalid number"
-                    Log.w(TAG, errorMessage)
-                    return Int.MIN_VALUE;
+                    Log.w(TAG, "Invalid number")
+                    return Int.MIN_VALUE
                 }
                 return value
             }
@@ -155,13 +173,12 @@ class HomeFragment : Fragment() {
             private fun createMainStatsViews(context: Context) {
                 for (i in 0 .. 5) {
                     // Creating edit texts for main stats
-                    val mainStatEditText = createEditText(context, 75, 45, StatType.Stats, i)
+                    val mainStatEditText = createEditText(context, 0.14, 0.03, StatType.Stats, i)
 
                     // Creating text views for bonus stats
                     val bonusView = TextView(context)
                     bonusView.id = View.generateViewId()
-                    bonusView.width = dpToPx(40)
-                    bonusView.height = dpToPx(30)
+                    bonusView.layoutParams = ViewGroup.LayoutParams(0.14.ratioToWidth(), 0.03.ratioToHeigth())
                     bonusView.setBackgroundColor(Color.BLUE)
                     bonusView.background.alpha = 50
                     bonusView.textSize = 20f
@@ -188,20 +205,8 @@ class HomeFragment : Fragment() {
                         }
                     })
 
-                    // Need to add views in order so views in front are added last
-                    statsLayout.addView(mainStatEditText)
-                    statsLayout.addView(bonusView)
-
-                    // Set constraints to views after views are added
-                    setViewToConstraintLayout(statsLayout, mainStatEditText, 0.2 to (0.2 + i * 0.1))
-//                    setStartTopConstraints(
-//                        statsLayout,
-//                        mainStatEditText,
-//                        statsLayout,
-//                        45,
-//                        60 + i * 130
-//                    )
-                    setStartTopConstraints(statsLayout, bonusView, mainStatEditText, 16, 55)
+                    setViewToStatsLayout(mainStatEditText, 0.155 to (0.06 + i.toDouble() * 0.109))
+                    setViewToStatsLayout(bonusView, 0.155 to (0.095 + i.toDouble() * 0.109))
                 }
             }
 
@@ -236,21 +241,19 @@ class HomeFragment : Fragment() {
                 }
 
                 // Creating edit text for inspiration
-                val inspirationText = createEditText(context, 45, 40, StatType.Stats, Stats.INSPIRATION.ordinal)
+                val inspirationText = createEditText(context, 0.14, 0.034, StatType.Stats, Stats.INSPIRATION.ordinal)
                 inspirationText.addTextChangedListener(CharacterStatUpdater(inspirationText, Stats.INSPIRATION.ordinal))
-                statsLayout.addView(inspirationText)
-                setStartTopConstraints(statsLayout, inspirationText, statsLayout, 150, 10)
+                setViewToStatsLayout(inspirationText, 0.41 to 0.01)
 
                 // Creating edit text for proficiency bonus
-                val proficiencyText = createEditText(context, 45, 40, StatType.Stats, Stats.PROFICIENCY_BONUS.ordinal)
+                val proficiencyText = createEditText(context, 0.145,0.034, StatType.Stats, Stats.PROFICIENCY_BONUS.ordinal)
                 proficiencyText.addTextChangedListener(
                     CharacterStatUpdater(
                         proficiencyText,
                         Stats.PROFICIENCY_BONUS.ordinal
                     )
                 )
-                statsLayout.addView(proficiencyText)
-                setStartTopConstraints(statsLayout, proficiencyText, statsLayout, 152, 77)
+                setViewToStatsLayout(proficiencyText, 0.41 to 0.067)
             }
 
             private fun createSavingThrows(context: Context) {
@@ -269,7 +272,7 @@ class HomeFragment : Fragment() {
 
                 // Creating edit texts for saving throws
                 for(savingThrow in SavingThrows.entries) {
-                    val proficiencyButton = createSavingThrowsProficiencyRadioButton(context, 30, 30, savingThrow.ordinal)
+                    val proficiencyButton = createRadioButton(context, 0.07, 0.02, savingThrow.ordinal, StatType.SavingThrows)
                     val status = proficiencyButton.isChecked
                     proficiencyButton.setOnClickListener(object : View.OnClickListener {
                         var m_previousStatus: Boolean = status
@@ -285,13 +288,11 @@ class HomeFragment : Fragment() {
                             characterViewModel.savingThrowProficiencyBonuses[savingThrow.ordinal] = m_previousStatus
                         }
                     })
-                    statsLayout.addView(proficiencyButton)
-                    setStartTopConstraints(statsLayout, proficiencyButton, statsLayout, 151, 148 + (savingThrow.ordinal * 24.9).toInt())
+                    setViewToStatsLayout(proficiencyButton, 0.425 to 0.127 + savingThrow.ordinal.toDouble() * 0.0207)
 
-                    val savingThrowView = createEditText(context, 30, 10, StatType.SavingThrows, savingThrow.ordinal)
+                    val savingThrowView = createEditText(context, 0.08, 0.026, StatType.SavingThrows, savingThrow.ordinal, 10f)
                     savingThrowView.addTextChangedListener(SavingThrowUpdater(savingThrowView, savingThrow))
-                    statsLayout.addView(savingThrowView)
-                    setStartTopConstraints(statsLayout, savingThrowView, statsLayout, 180, 143 + (savingThrow.ordinal * 24.9).toInt())
+                    setViewToStatsLayout(savingThrowView, 0.505 to 0.124+ savingThrow.ordinal.toDouble() * 0.0207)
                 }
             }
 
@@ -311,7 +312,7 @@ class HomeFragment : Fragment() {
 
                 // Creating edit texts for skills
                 for(skills in Skills.entries) {
-                    val proficiencyButton = createSkillsProficiencyRadioButton(context, 30, 30, skills.ordinal)
+                    val proficiencyButton = createRadioButton(context, 0.07, 0.02, skills.ordinal, StatType.Skills)
                     val status = proficiencyButton.isChecked
                     proficiencyButton.setOnClickListener(object : View.OnClickListener {
                         var m_previousStatus: Boolean = status
@@ -327,13 +328,11 @@ class HomeFragment : Fragment() {
                             characterViewModel.skillsProficiencyBonuses[skills.ordinal] = m_previousStatus
                         }
                     })
-                    statsLayout.addView(proficiencyButton)
-                    setStartTopConstraints(statsLayout, proficiencyButton, statsLayout, 151, 358 + (skills.ordinal * 24.7).toInt())
+                    setViewToStatsLayout(proficiencyButton, 0.425 to 0.303 + skills.ordinal.toDouble() * 0.02065)
 
-                    val skillsView = createEditText(context, 30, 10, StatType.Skills,  skills.ordinal)
+                    val skillsView = createEditText(context, 0.07, 0.026, StatType.Skills,  skills.ordinal, 10f)
                     skillsView.addTextChangedListener(SkillsUpdater(skillsView, skills))
-                    statsLayout.addView(skillsView)
-                    setStartTopConstraints(statsLayout, skillsView, statsLayout, 180, 354 + (skills.ordinal * 24.6).toInt())
+                    setViewToStatsLayout(skillsView,  0.5 to 0.3016 + skills.ordinal.toDouble() * 0.02065)
                 }
             }
 
@@ -353,43 +352,65 @@ class HomeFragment : Fragment() {
                 }
 
                 // Creating edit text for passive wisdom
-                val passiveWisdomText = createEditText(context, 45, 40, StatType.Skills, Stats.PASSIVE_WISDOM.ordinal)
+                val passiveWisdomText = createEditText(context, 0.145, 0.04, StatType.Skills, Stats.PASSIVE_WISDOM.ordinal)
                 passiveWisdomText.addTextChangedListener(CharacterStatUpdater(passiveWisdomText, Stats.PASSIVE_WISDOM.ordinal))
-                statsLayout.addView(passiveWisdomText)
-                setStartTopConstraints(statsLayout, passiveWisdomText, statsLayout, 32, 848)
+                setViewToStatsLayout(passiveWisdomText, 0.082 to 0.71)
             }
 
-            // ToDo: Merge createSkillsProficiencyRadioButton and createSavingThrowsProficiencyRadioButton to single method
-            private fun createSkillsProficiencyRadioButton(context: Context, width: Int, height: Int, i: Int): RadioButton {
+            private fun createProficienciesAndLanguages(context: Context) {
+                val layout = RelativeLayout(context)
+                layout.id = View.generateViewId()
+                layout.layoutParams = ViewGroup.LayoutParams(0.85.ratioToWidth(), 0.205.ratioToHeigth())
+                setViewToStatsLayout(layout, 0.1 to 0.765)
+
+                val nestedScrollView = NestedScrollView(context)
+                nestedScrollView.id = View.generateViewId()
+                nestedScrollView.isFillViewport = true
+                nestedScrollView.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+
+                layout.addView(nestedScrollView)
+
+                val editText = EditText(context)
+                editText.id = View.generateViewId()
+                editText.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                editText.setBackgroundColor(Color.RED)
+                editText.background.alpha = 50
+                editText.setTextColor(Color.BLACK)
+                editText.textSize = 15f
+                editText.gravity = Gravity.START or Gravity.TOP
+                editText.setText(characterViewModel.proficienciesAndLanguages)
+                editText.addTextChangedListener (afterTextChanged = { editedText: Editable? ->
+                    characterViewModel.proficienciesAndLanguages = editedText.toString()
+                })
+
+                nestedScrollView.addView(editText)
+            }
+
+            // ToDo: RadioButton icon is not same size for different display resolutions and dpi. Make something to match those
+            private fun createRadioButton(context: Context, width: Double, height: Double, i: Int, type: StatType): RadioButton {
                 val radioButton = RadioButton(context)
                 radioButton.id = View.generateViewId()
-                radioButton.width = dpToPx(width)
-                radioButton.height = dpToPx(height)
+                radioButton.layoutParams = ViewGroup.LayoutParams(width.ratioToWidth(),
+                                                                  height.ratioToHeigth())
+
                 radioButton.setBackgroundColor(Color.RED)
                 radioButton.background.alpha = 50
-                radioButton.isChecked = characterViewModel.skillsProficiencyBonuses[i]
+                when(type) {
+                    StatType.Skills -> radioButton.isChecked = characterViewModel.skillsProficiencyBonuses[i]
+                    StatType.SavingThrows -> radioButton.isChecked = characterViewModel.savingThrowProficiencyBonuses[i]
+                    else -> {}
+                }
                 return radioButton
             }
 
-            private fun createSavingThrowsProficiencyRadioButton(context: Context, width: Int, height: Int, i: Int): RadioButton {
-                val radioButton = RadioButton(context)
-                radioButton.id = View.generateViewId()
-                radioButton.width = dpToPx(width)
-                radioButton.height = dpToPx(height)
-                radioButton.setBackgroundColor(Color.RED)
-                radioButton.background.alpha = 50
-                radioButton.isChecked = characterViewModel.savingThrowProficiencyBonuses[i]
-                return radioButton
-            }
-
-            private fun createEditText(context: Context, width: Int, height: Int, type: StatType, i: Int): EditText {
+            private fun createEditText(context: Context, width: Double, height: Double, type: StatType, i: Int, textSize: Float = 14f): EditText {
                 val editTextView = EditText(context)
                 editTextView.id = View.generateViewId()
-                editTextView.width = dpToPx(width)
-                editTextView.height = dpToPx(height)
+                editTextView.layoutParams = ViewGroup.LayoutParams(width.ratioToWidth(),
+                                                                   height.ratioToHeigth())
                 editTextView.setBackgroundColor(Color.RED)
                 editTextView.background.alpha = 50
-                editTextView.textSize = 14f
+                editTextView.textSize = textSize
                 editTextView.gravity = Gravity.CENTER
                 editTextView.inputType = InputType.TYPE_CLASS_NUMBER
                 editTextView.setTextColor(Color.BLACK)
@@ -402,61 +423,12 @@ class HomeFragment : Fragment() {
                 return editTextView
             }
 
-            private fun createProficienciesAndLanguages(context: Context) {
-
-                var layout = RelativeLayout(context)
-                layout.id = View.generateViewId()
-                layout.layoutParams = ViewGroup.LayoutParams(dpToPx(307), dpToPx(245))
-                statsLayout.addView(layout)
-                setStartTopConstraints(statsLayout, layout, statsLayout, 36, 915)
-
-                var nestedScrollView = NestedScrollView(context)
-                nestedScrollView.id = View.generateViewId()
-                nestedScrollView.isFillViewport = false
-                nestedScrollView.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-
-                layout.addView(nestedScrollView)
-                setStartTopConstraints(statsLayout, nestedScrollView, statsLayout, 36, 915)
-
-                val editText = EditText(context)
-                editText.id = View.generateViewId()
-                editText.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                editText.setBackgroundColor(Color.RED)
-                editText.background.alpha = 50
-                editText.setTextColor(Color.BLACK)
-                editText.textSize = 20f
-                editText.gravity = Gravity.START or Gravity.TOP
-                editText.setText(characterViewModel.proficienciesAndLanguages)
-                editText.addTextChangedListener (afterTextChanged = { editedText: Editable? ->
-                    characterViewModel.proficienciesAndLanguages = editedText.toString()
-                })
-                nestedScrollView.addView(editText)
-                setStartTopConstraints(statsLayout, editText, nestedScrollView, 0, 0)
+            private fun Double.ratioToWidth(): Int {
+                return (this * m_statsSize.first).toInt()
             }
 
-            private fun setStartTopConstraints(layout: ConstraintLayout, firstView: View,
-                                               secondView: View,
-                                               startMargin: Int, topMargin: Int) {
-                val constraintSet = ConstraintSet()
-                constraintSet.clone(layout)
-                // Constraint in horizontal
-                constraintSet.connect(
-                    firstView.id, ConstraintSet.START,
-                    secondView.id, ConstraintSet.START,
-                    dpToPx(startMargin))
-
-                // Constraint in vertical
-                constraintSet.connect(
-                    firstView.id, ConstraintSet.TOP,
-                    secondView.id, ConstraintSet.TOP,
-                    dpToPx(topMargin))
-                constraintSet.applyTo(layout)
-            }
-
-            private fun dpToPx(dp: Number): Int {
-                return TypedValue.applyDimension(
-                    TypedValue.COMPLEX_UNIT_DIP, dp.toFloat(), resources.displayMetrics
-                ).toInt()
+            private fun Double.ratioToHeigth(): Int {
+                return (this * m_statsSize.second).toInt()
             }
         })
     }
@@ -467,28 +439,23 @@ class HomeFragment : Fragment() {
         //saveToGoogleDocs(text)
     }
 
-    private fun setViewToConstraintLayout(layout: ConstraintLayout, view: View, position: Pair<Double, Double>) {
-        val widthPx = layout.width
-        val heightP = layout.minHeight
-
-        // Position is % value, in x axis 0 is left, 1 is right, in y axis 0 is top, 1 is bottom
-        val posX = (position.first * widthPx).toInt()
-        val posY = (position.second * heightP).toInt()
+    private fun setViewToStatsLayout(view: View, position: Pair<Double, Double>) {
+        m_statsLayout.addView(view)
 
         val constraintSet = ConstraintSet()
-        constraintSet.clone(layout)
+        constraintSet.clone(m_statsLayout)
         // Constraint in horizontal
         constraintSet.connect(
-            layout.id, ConstraintSet.START,
             view.id, ConstraintSet.START,
-            posX)
+            m_statsLayout.id, ConstraintSet.START,
+            (m_statsSize.first.toDouble() * position.first).toInt())
 
         // Constraint in vertical
         constraintSet.connect(
-            layout.id, ConstraintSet.TOP,
             view.id, ConstraintSet.TOP,
-            posY)
-        constraintSet.applyTo(layout)
+            m_statsLayout.id, ConstraintSet.TOP,
+            (m_statsSize.second.toDouble() * position.second).toInt())
+        constraintSet.applyTo(m_statsLayout)
     }
 
     private fun saveToGoogleDocs(text: String) {
