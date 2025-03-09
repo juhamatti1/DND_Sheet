@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Matrix
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
@@ -19,12 +20,15 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewTreeObserver
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.core.widget.NestedScrollView
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -47,7 +51,7 @@ class HomeFragment : Fragment() {
     private val TAG: String = "HomeFragment"
     private lateinit var characterViewModel: Character
     private val name = "character.json"
-    private lateinit var  m_statsLayout : ConstraintLayout
+    lateinit var  m_statsLayout : ConstraintLayout
     private lateinit var m_statsSize : Pair<Int, Int>
 
 
@@ -122,29 +126,7 @@ class HomeFragment : Fragment() {
 
                 createProficienciesAndLanguages(context)
 
-                // drawing grid
-//                val canvas = Canvas(resizedBitmap)
-//                val paint = Paint()
-//                paint.color = Color.BLUE
-//                paint.strokeWidth = 5f
-//                paint.alpha = 60
-//                for(i in 1..9) {
-//
-//                    var startX = 0f
-//                    var startY = i.toFloat()*0.1f * m_statsSize.second.toFloat()
-//                    var endX = m_statsSize.first.toFloat()
-//                    var endY = startY
-//
-//                    canvas.drawLine(startX, startY, endX, endY, paint)
-//
-//                    startY = 0f
-//                    startX = i*0.1f * m_statsSize.first.toFloat()
-//                    endY = m_statsSize.second.toFloat()
-//                    endX = startX
-//
-//                    canvas.drawLine(startX, startY, endX, endY, paint)
-//                }
-//                statsImageView.invalidate()
+                statsImageView.invalidate()
             }
 
             private fun stringToInt(text: String): Int {
@@ -178,13 +160,12 @@ class HomeFragment : Fragment() {
                     // Creating text views for bonus stats
                     val bonusView = TextView(context)
                     bonusView.id = View.generateViewId()
-                    bonusView.layoutParams = ViewGroup.LayoutParams(0.14.ratioToWidth(), 0.03.ratioToHeigth())
-                    bonusView.setBackgroundColor(Color.BLUE)
-                    bonusView.background.alpha = 50
+                    bonusView.layoutParams = ViewGroup.LayoutParams(0.14.rawWidth(), 0.03.rawHeight())
                     bonusView.textSize = 20f
                     bonusView.gravity = Gravity.CENTER
                     bonusView.text =
                         calculateSubValue(stringToInt(mainStatEditText.text.toString())).toString()
+                    bonusView.setTextColor(Color.BLACK)
 
                     // Listener to update bonus stats when main stat is edited
                     mainStatEditText.addTextChangedListener(afterTextChanged = listener@{ editedText: Editable? ->
@@ -272,23 +253,9 @@ class HomeFragment : Fragment() {
 
                 // Creating edit texts for saving throws
                 for(savingThrow in SavingThrows.entries) {
-                    val proficiencyButton = createRadioButton(context, 0.07, 0.02, savingThrow.ordinal, StatType.SavingThrows)
-                    val status = proficiencyButton.isChecked
-                    proficiencyButton.setOnClickListener(object : View.OnClickListener {
-                        var m_previousStatus: Boolean = status
+                    val proficiencyButton = createRadioButton(context, savingThrow.ordinal, StatType.SavingThrows)
 
-                        override fun onClick(p0: View?) {
-                            val button = p0 as RadioButton
-                            if(m_previousStatus == button.isChecked) {
-                                m_previousStatus = !button.isChecked
-                            } else {
-                                m_previousStatus = button.isChecked
-                            }
-                            button.isChecked = m_previousStatus
-                            characterViewModel.savingThrowProficiencyBonuses[savingThrow.ordinal] = m_previousStatus
-                        }
-                    })
-                    setViewToStatsLayout(proficiencyButton, 0.425 to 0.127 + savingThrow.ordinal.toDouble() * 0.0207)
+                    setViewToStatsLayout(proficiencyButton, 0.445 to 0.129 + savingThrow.ordinal.toDouble() * 0.02065)
 
                     val savingThrowView = createEditText(context, 0.08, 0.026, StatType.SavingThrows, savingThrow.ordinal, 10f)
                     savingThrowView.addTextChangedListener(SavingThrowUpdater(savingThrowView, savingThrow))
@@ -312,27 +279,12 @@ class HomeFragment : Fragment() {
 
                 // Creating edit texts for skills
                 for(skills in Skills.entries) {
-                    val proficiencyButton = createRadioButton(context, 0.07, 0.02, skills.ordinal, StatType.Skills)
-                    val status = proficiencyButton.isChecked
-                    proficiencyButton.setOnClickListener(object : View.OnClickListener {
-                        var m_previousStatus: Boolean = status
-
-                        override fun onClick(p0: View?) {
-                            val button = p0 as RadioButton
-                            if(m_previousStatus == button.isChecked) {
-                                m_previousStatus = !button.isChecked
-                            } else {
-                                m_previousStatus = button.isChecked
-                            }
-                            button.isChecked = m_previousStatus
-                            characterViewModel.skillsProficiencyBonuses[skills.ordinal] = m_previousStatus
-                        }
-                    })
-                    setViewToStatsLayout(proficiencyButton, 0.425 to 0.303 + skills.ordinal.toDouble() * 0.02065)
+                    val proficiencyButton = createRadioButton(context, skills.ordinal, StatType.Skills)
+                    setViewToStatsLayout(proficiencyButton, 0.445 to 0.305 + skills.ordinal.toDouble() * 0.02065)
 
                     val skillsView = createEditText(context, 0.07, 0.026, StatType.Skills,  skills.ordinal, 10f)
                     skillsView.addTextChangedListener(SkillsUpdater(skillsView, skills))
-                    setViewToStatsLayout(skillsView,  0.5 to 0.3016 + skills.ordinal.toDouble() * 0.02065)
+                    setViewToStatsLayout(skillsView,  0.5 to 0.3 + skills.ordinal.toDouble() * 0.02065)
                 }
             }
 
@@ -352,7 +304,7 @@ class HomeFragment : Fragment() {
                 }
 
                 // Creating edit text for passive wisdom
-                val passiveWisdomText = createEditText(context, 0.145, 0.04, StatType.Skills, Stats.PASSIVE_WISDOM.ordinal)
+                val passiveWisdomText = createEditText(context, 0.145, 0.04, StatType.Stats, Stats.PASSIVE_WISDOM.ordinal)
                 passiveWisdomText.addTextChangedListener(CharacterStatUpdater(passiveWisdomText, Stats.PASSIVE_WISDOM.ordinal))
                 setViewToStatsLayout(passiveWisdomText, 0.082 to 0.71)
             }
@@ -360,7 +312,7 @@ class HomeFragment : Fragment() {
             private fun createProficienciesAndLanguages(context: Context) {
                 val layout = RelativeLayout(context)
                 layout.id = View.generateViewId()
-                layout.layoutParams = ViewGroup.LayoutParams(0.85.ratioToWidth(), 0.205.ratioToHeigth())
+                layout.layoutParams = ViewGroup.LayoutParams(0.85.rawWidth(), 0.205.rawHeight())
                 setViewToStatsLayout(layout, 0.1 to 0.765)
 
                 val nestedScrollView = NestedScrollView(context)
@@ -373,8 +325,6 @@ class HomeFragment : Fragment() {
                 val editText = EditText(context)
                 editText.id = View.generateViewId()
                 editText.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-                editText.setBackgroundColor(Color.RED)
-                editText.background.alpha = 50
                 editText.setTextColor(Color.BLACK)
                 editText.textSize = 15f
                 editText.gravity = Gravity.START or Gravity.TOP
@@ -387,14 +337,61 @@ class HomeFragment : Fragment() {
             }
 
             // ToDo: RadioButton icon is not same size for different display resolutions and dpi. Make something to match those
-            private fun createRadioButton(context: Context, width: Double, height: Double, i: Int, type: StatType): RadioButton {
+            private fun createRadioButton(context: Context, i: Int, type: StatType): RadioButton {
                 val radioButton = RadioButton(context)
+                val width = 0.038
+                val height = 0.012
                 radioButton.id = View.generateViewId()
-                radioButton.layoutParams = ViewGroup.LayoutParams(width.ratioToWidth(),
-                                                                  height.ratioToHeigth())
 
-                radioButton.setBackgroundColor(Color.RED)
-                radioButton.background.alpha = 50
+                val layoutWidth = (width.rawWidth() * 1.5).toInt()
+                val layoutHeight = (height.rawHeight() * 1.5).toInt()
+                val layoutParams = LinearLayout.LayoutParams(layoutWidth, layoutHeight)
+                layoutParams.gravity = Gravity.CENTER
+                radioButton.layoutParams = layoutParams
+
+                // Resize check and uncheck-drawables to correct size
+                val checkedDrawable = ResourcesCompat.getDrawable(context.resources, R.drawable.baseline_radio_button_checked_24, null)
+                val uncheckedDrawable = ResourcesCompat.getDrawable(context.resources, R.drawable.baseline_radio_button_unchecked_24, null)
+
+                assert(uncheckedDrawable != null && checkedDrawable != null)
+
+                val checkedBitmap = checkedDrawable!!.toBitmap()
+                val uncheckedBitmap = uncheckedDrawable!!.toBitmap()
+
+                val checkedResized = Bitmap.createScaledBitmap(checkedBitmap, width.rawWidth(), height.rawHeight(), true)
+                val uncheckedResized = Bitmap.createScaledBitmap(uncheckedBitmap, width.rawWidth(), height.rawHeight(), true)
+
+                val checkedResizedDrawable = BitmapDrawable(resources, checkedResized)
+                val uncheckedResizedDrawable = BitmapDrawable(resources, uncheckedResized)
+
+                radioButton.buttonDrawable = uncheckedResizedDrawable
+                radioButton.setOnCheckedChangeListener { buttonView, isChecked ->
+                    buttonView.buttonDrawable = if(isChecked) {buttonView
+                        checkedResizedDrawable
+                    } else {
+                        uncheckedResizedDrawable
+                    }
+                }
+
+                radioButton.setOnClickListener(object : View.OnClickListener {
+                    var m_previousStatus: Boolean = radioButton.isChecked
+
+                    override fun onClick(p0: View?) {
+                        val button = p0 as RadioButton
+                        if(m_previousStatus == button.isChecked) {
+                            m_previousStatus = !button.isChecked
+                        } else {
+                            m_previousStatus = button.isChecked
+                        }
+                        button.isChecked = m_previousStatus
+                        when(type) {
+                            StatType.Skills -> characterViewModel.skillsProficiencyBonuses[i] = button.isChecked
+                            StatType.SavingThrows -> characterViewModel.savingThrowProficiencyBonuses[i] = button.isChecked
+                            else -> {}
+                        }
+                    }
+                })
+
                 when(type) {
                     StatType.Skills -> radioButton.isChecked = characterViewModel.skillsProficiencyBonuses[i]
                     StatType.SavingThrows -> radioButton.isChecked = characterViewModel.savingThrowProficiencyBonuses[i]
@@ -406,10 +403,8 @@ class HomeFragment : Fragment() {
             private fun createEditText(context: Context, width: Double, height: Double, type: StatType, i: Int, textSize: Float = 14f): EditText {
                 val editTextView = EditText(context)
                 editTextView.id = View.generateViewId()
-                editTextView.layoutParams = ViewGroup.LayoutParams(width.ratioToWidth(),
-                                                                   height.ratioToHeigth())
-                editTextView.setBackgroundColor(Color.RED)
-                editTextView.background.alpha = 50
+                editTextView.layoutParams = ViewGroup.LayoutParams(width.rawWidth(),
+                                                                   height.rawHeight())
                 editTextView.textSize = textSize
                 editTextView.gravity = Gravity.CENTER
                 editTextView.inputType = InputType.TYPE_CLASS_NUMBER
@@ -421,14 +416,6 @@ class HomeFragment : Fragment() {
                     StatType.SavingThrows -> editTextView.setText(characterViewModel.savingThrows[i].toString())
                 }
                 return editTextView
-            }
-
-            private fun Double.ratioToWidth(): Int {
-                return (this * m_statsSize.first).toInt()
-            }
-
-            private fun Double.ratioToHeigth(): Int {
-                return (this * m_statsSize.second).toInt()
             }
         })
     }
@@ -448,14 +435,23 @@ class HomeFragment : Fragment() {
         constraintSet.connect(
             view.id, ConstraintSet.START,
             m_statsLayout.id, ConstraintSet.START,
-            (m_statsSize.first.toDouble() * position.first).toInt())
+            position.first.rawWidth())
 
         // Constraint in vertical
         constraintSet.connect(
             view.id, ConstraintSet.TOP,
             m_statsLayout.id, ConstraintSet.TOP,
-            (m_statsSize.second.toDouble() * position.second).toInt())
+            position.second.rawHeight())
+
         constraintSet.applyTo(m_statsLayout)
+    }
+
+    private fun Double.rawWidth(): Int {
+        return (this * m_statsSize.first).toInt()
+    }
+
+    private fun Double.rawHeight(): Int {
+        return (this * m_statsSize.second).toInt()
     }
 
     private fun saveToGoogleDocs(text: String) {
