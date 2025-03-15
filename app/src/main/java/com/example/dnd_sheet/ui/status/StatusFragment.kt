@@ -1,4 +1,4 @@
-package com.example.dnd_sheet.ui.home
+package com.example.dnd_sheet.ui.status
 
 import android.content.Context
 import android.content.Intent
@@ -39,15 +39,15 @@ import com.example.dnd_sheet.Character.Skills
 import com.example.dnd_sheet.Character.StatType
 import com.example.dnd_sheet.Character.Stats
 import com.example.dnd_sheet.R
-import com.example.dnd_sheet.databinding.FragmentHomeBinding
+import com.example.dnd_sheet.databinding.FragmentStatusBinding
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
 
-class HomeFragment : Fragment() {
+class StatusFragment : Fragment() {
 
     // ? makes possible that variable can be declared as null
-    private var _binding: FragmentHomeBinding? = null
+    private var _binding: FragmentStatusBinding? = null
     private val TAG: String = "HomeFragment"
     private lateinit var characterViewModel: Character
     private val name = "character.json"
@@ -74,7 +74,7 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        _binding = FragmentStatusBinding.inflate(inflater, container, false)
         return binding.root
     }
 
