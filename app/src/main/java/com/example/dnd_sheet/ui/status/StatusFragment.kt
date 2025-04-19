@@ -280,7 +280,7 @@ class StatusFragment : Fragment() {
                 // Creating edit texts for skills
                 for(skills in Skills.entries) {
                     val proficiencyButton = createRadioButton(context, skills.ordinal, StatType.Skills)
-                    setViewToStatsLayout(proficiencyButton, 0.445 to 0.305 + skills.ordinal.toDouble() * 0.02065)
+                    setViewToStatsLayout(proficiencyButton, 0.445 to 0.305 + skills.ordinal.toDouble() * 0.0206)
 
                     val skillsView = createEditText(context, 0.07, 0.026, StatType.Skills,  skills.ordinal, 10f)
                     skillsView.addTextChangedListener(SkillsUpdater(skillsView, skills))
@@ -366,7 +366,7 @@ class StatusFragment : Fragment() {
 
                 radioButton.buttonDrawable = uncheckedResizedDrawable
                 radioButton.setOnCheckedChangeListener { buttonView, isChecked ->
-                    buttonView.buttonDrawable = if(isChecked) {buttonView
+                    buttonView.buttonDrawable = if(isChecked) {
                         checkedResizedDrawable
                     } else {
                         uncheckedResizedDrawable
