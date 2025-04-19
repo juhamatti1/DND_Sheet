@@ -15,6 +15,16 @@ class Character : ViewModel() {
     val stats = IntArray(Stats.entries.size) { 0 }
     val savingThrows = IntArray(SavingThrows.entries.size) { 0 }
     val skills = IntArray(Skills.entries.size) { 0 }
+    val armorClass: Int = 0
+    val initiative: Int = 0
+    val speed: Int = 0
+    val hitpointMaximum: Int = 0
+    val currentHitpoint: Int = 0
+    val temporaryHitpoint: Int = 0
+    val hitDice: Int = 0
+    val hitDiceTotal: Int = 0
+    val successes: Int = 0
+    val failures: Int = 0
     val skillsProficiencyBonuses = BooleanArray(Skills.entries.size) { false }
     val savingThrowProficiencyBonuses = BooleanArray(SavingThrows.entries.size) { false }
     var proficienciesAndLanguages = ""
@@ -36,6 +46,21 @@ class Character : ViewModel() {
         ACROBATICS, ANIMAL_HANDLING, ARCANA, ATHLETICS, DECEPTION, HISTORY, INSIGHT, INTIMIDATION,
         INVESTIGATION, MEDICINE, NATURE, PERCEPTION, PERFORMANCE, PERSUASION, RELIGION,
         SLEIGHT_OF_HAND, STEALTH, SURVIVAL
+    }
+
+    enum class EquipmentStats {
+        ARMOR_CLASS, INITIATIVE, SPEED, HIT_POINT_MAXIMUM, CURRENT_HIT_POINTS, TEMPORARY_HIT_POINTS,
+        HIT_DICE, HIT_DICE_TOTAL, SUCCESSES, FAILURES,
+    }
+
+    class ATTACKS_SPELLCASTING {
+        enum class Stats {
+            NAME, ATK_BONUS, DAMAGE, DAMAGE_TYPE
+        }
+    }
+
+    enum class EQUIPMENT {
+        CP, SP, EP, GP, PP
     }
 
 //    enum class DND_classes {
