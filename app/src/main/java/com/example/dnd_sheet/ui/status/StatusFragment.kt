@@ -51,8 +51,8 @@ class StatusFragment : Fragment() {
     private val TAG: String = "HomeFragment"
     private lateinit var characterViewModel: Character
     private val name = "character.json"
-    lateinit var  m_statsLayout : ConstraintLayout
-    private lateinit var m_statsSize : Pair<Int, Int>
+    lateinit var  statsLayout : ConstraintLayout
+    private lateinit var statsSize : Pair<Int, Int>
 
 
     // This property is only valid between onCreateView and
@@ -81,17 +81,17 @@ class StatusFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        m_statsLayout = view.findViewById(R.id.stats_layout)
+        statsLayout = view.findViewById(R.id.stats_layout)
 
-        m_statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+        statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
             override fun onGlobalLayout() {
                 //Remove the listener before proceeding
-                m_statsLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                statsLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
 
                 // Change layout width x height ratio to match background image
                 val statsBitmap = BitmapFactory.decodeResource(resources, R.drawable.stats)
 
-                val layoutWidth = m_statsLayout.measuredWidth
+                val layoutWidth = statsLayout.measuredWidth
 
                 // Using matrix to scale imageview to fit nicely to layout
                 val matrix = Matrix()
@@ -109,10 +109,10 @@ class StatusFragment : Fragment() {
                 val statsImageView = ImageView(context)
                 statsImageView.id = View.generateViewId()
                 statsImageView.setImageBitmap(resizedBitmap)
-                m_statsLayout.addView(statsImageView)
+                statsLayout.addView(statsImageView)
 
-                m_statsSize = resizedBitmap.width to resizedBitmap.height
-                m_statsSize.first.toDouble() / m_statsSize.second.toDouble()
+                statsSize = resizedBitmap.width to resizedBitmap.height
+                statsSize.first.toDouble() / statsSize.second.toDouble()
 
                 createMainStatsViews(context)
 
@@ -427,31 +427,31 @@ class StatusFragment : Fragment() {
     }
 
     private fun setViewToStatsLayout(view: View, position: Pair<Double, Double>) {
-        m_statsLayout.addView(view)
+        statsLayout.addView(view)
 
         val constraintSet = ConstraintSet()
-        constraintSet.clone(m_statsLayout)
+        constraintSet.clone(statsLayout)
         // Constraint in horizontal
         constraintSet.connect(
             view.id, ConstraintSet.START,
-            m_statsLayout.id, ConstraintSet.START,
+            statsLayout.id, ConstraintSet.START,
             position.first.rawWidth())
 
         // Constraint in vertical
         constraintSet.connect(
             view.id, ConstraintSet.TOP,
-            m_statsLayout.id, ConstraintSet.TOP,
+            statsLayout.id, ConstraintSet.TOP,
             position.second.rawHeight())
 
-        constraintSet.applyTo(m_statsLayout)
+        constraintSet.applyTo(statsLayout)
     }
 
     private fun Double.rawWidth(): Int {
-        return (this * m_statsSize.first).toInt()
+        return (this * statsSize.first).toInt()
     }
 
     private fun Double.rawHeight(): Int {
-        return (this * m_statsSize.second).toInt()
+        return (this * statsSize.second).toInt()
     }
 
     private fun saveToGoogleDocs(text: String) {
