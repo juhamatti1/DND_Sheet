@@ -38,11 +38,9 @@ import com.example.dnd_sheet.Character.SavingThrows
 import com.example.dnd_sheet.Character.Skills
 import com.example.dnd_sheet.Character.StatType
 import com.example.dnd_sheet.Character.Stats
+import com.example.dnd_sheet.MainActivity
 import com.example.dnd_sheet.R
 import com.example.dnd_sheet.databinding.FragmentStatusBinding
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import java.io.FileNotFoundException
 
 class StatusFragment : Fragment() {
 
@@ -50,7 +48,6 @@ class StatusFragment : Fragment() {
     private var _binding: FragmentStatusBinding? = null
     private val TAG: String = "HomeFragment"
     private lateinit var characterViewModel: Character
-    private val name = "character.json"
     lateinit var  statsLayout : ConstraintLayout
     private lateinit var statsSize : Pair<Int, Int>
 
@@ -422,7 +419,7 @@ class StatusFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        saveToJson()
+        (activity as MainActivity).saveToJson(characterViewModel)
         //saveToGoogleDocs(text)
     }
 
@@ -454,54 +451,15 @@ class StatusFragment : Fragment() {
         return (this * statsSize.second).toInt()
     }
 
-    private fun saveToGoogleDocs(text: String) {
-        val sendIntent = Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, text) // Replace with your JSON data
-            setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            setPackage("com.google.android.apps.docs")
-            type = "text/plain"
-        }
-        startActivity(sendIntent)
-    }
-
-    private fun saveToJson() : String {
-        val text = Json.encodeToString(characterViewModel)
-        requireContext().openFileOutput(name, Context.MODE_PRIVATE).use {
-            it.write(text.toByteArray())
-            it.close()
-        }
-        return text
-    }
-
-
-    private fun loadFromJson(): Boolean {
-        val bytes: ByteArray
-        try {
-            requireContext().openFileInput(name).use {
-                bytes = it.readBytes()
-                it.close()
-            }
-        } catch (e: FileNotFoundException) {
-            Log.w(TAG, "\"$name\" file not found")
-            return false
-        }
-        var character: Character? = null
-        val error = kotlin.runCatching {
-            character = Json.decodeFromString<Character>(bytes.decodeToString())
-        }
-        if(character == null || error.isFailure) {
-            Log.e(TAG, error.exceptionOrNull().toString())
-            return false
-        }
-        characterViewModel = character as Character
-        return true
-    }
-
     override fun onResume() {
         super.onResume()
         // Check if there is already local character file. Load it if yes
-        loadFromJson()
+        val tempCharacter = (activity as MainActivity).loadFromJson()
+        if(tempCharacter == null) {
+            Toast.makeText(context, "Failed to load json", Toast.LENGTH_SHORT).show()
+            return
+        }
+        characterViewModel = tempCharacter
     }
 
     override fun onDestroyView() {

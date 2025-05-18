@@ -12,21 +12,21 @@ class Character : ViewModel() {
 //    lateinit var primary_race: Races
 //    var experience: Float = 0f
 
-    val stats = IntArray(Stats.entries.size) { 0 }
-    val savingThrows = IntArray(SavingThrows.entries.size) { 0 }
-    val skills = IntArray(Skills.entries.size) { 0 }
-    val armorClass: Int = 0
-    val initiative: Int = 0
-    val speed: Int = 0
-    val hitpointMaximum: Int = 0
-    val currentHitpoint: Int = 0
-    val temporaryHitpoint: Int = 0
-    val hitDice: Int = 0
-    val hitDiceTotal: Int = 0
-    val successes: Int = 0
-    val failures: Int = 0
-    val skillsProficiencyBonuses = BooleanArray(Skills.entries.size) { false }
-    val savingThrowProficiencyBonuses = BooleanArray(SavingThrows.entries.size) { false }
+    var stats = IntArray(Stats.entries.size) { 0 }
+    var savingThrows = IntArray(SavingThrows.entries.size) { 0 }
+    var skills = IntArray(Skills.entries.size) { 0 }
+    var armorClass: Int = 0
+    var initiative: Int = 0
+    var speed: Int = 0
+    var hitpointMaximum: Int = 0
+    var currentHitpoint: Int = 0
+    var temporaryHitpoint: Int = 0
+    var hitDice: Int = 0
+    var hitDiceTotal: Int = 0
+    var successes: Int = 0
+    var failures: Int = 0
+    var skillsProficiencyBonuses = BooleanArray(Skills.entries.size) { false }
+    var savingThrowProficiencyBonuses = BooleanArray(SavingThrows.entries.size) { false }
     var proficienciesAndLanguages = ""
 
 //    lateinit var saving_throws: HashMap<Saving_throws, Int>

@@ -96,16 +96,16 @@ class DashboardFragment : Fragment() {
                 editTextView.setTextColor(Color.BLACK)
 
                 when(type) {
-                    EquipmentStats.ARMOR_CLASS -> editTextView.setText(characterViewModel.armorClass)
-                    EquipmentStats.INITIATIVE -> editTextView.setText(characterViewModel.initiative)
-                    EquipmentStats.SPEED -> editTextView.setText(characterViewModel.speed)
-                    EquipmentStats.HIT_POINT_MAXIMUM -> editTextView.setText(characterViewModel.hitpointMaximum)
-                    EquipmentStats.CURRENT_HIT_POINTS -> editTextView.setText(characterViewModel.currentHitpoint)
-                    EquipmentStats.TEMPORARY_HIT_POINTS -> editTextView.setText(characterViewModel.temporaryHitpoint)
-                    EquipmentStats.HIT_DICE -> editTextView.setText(characterViewModel.hitDice)
-                    EquipmentStats.HIT_DICE_TOTAL -> editTextView.setText(characterViewModel.hitDiceTotal)
-                    EquipmentStats.SUCCESSES -> editTextView.setText(characterViewModel.successes)
-                    EquipmentStats.FAILURES -> editTextView.setText(characterViewModel.failures)
+                    EquipmentStats.ARMOR_CLASS -> editTextView.setText(characterViewModel.armorClass.toString())
+                    EquipmentStats.INITIATIVE -> editTextView.setText(characterViewModel.initiative.toString())
+                    EquipmentStats.SPEED -> editTextView.setText(characterViewModel.speed.toString())
+                    EquipmentStats.HIT_POINT_MAXIMUM -> editTextView.setText(characterViewModel.hitpointMaximum.toString())
+                    EquipmentStats.CURRENT_HIT_POINTS -> editTextView.setText(characterViewModel.currentHitpoint.toString())
+                    EquipmentStats.TEMPORARY_HIT_POINTS -> editTextView.setText(characterViewModel.temporaryHitpoint.toString())
+                    EquipmentStats.HIT_DICE -> editTextView.setText(characterViewModel.hitDice.toString())
+                    EquipmentStats.HIT_DICE_TOTAL -> editTextView.setText(characterViewModel.hitDiceTotal.toString())
+                    EquipmentStats.SUCCESSES -> editTextView.setText(characterViewModel.successes.toString())
+                    EquipmentStats.FAILURES -> editTextView.setText(characterViewModel.failures.toString())
                 }
                 return editTextView
             }
