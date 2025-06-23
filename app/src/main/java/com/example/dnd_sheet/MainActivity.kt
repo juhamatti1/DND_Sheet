@@ -12,26 +12,28 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.dnd_sheet.databinding.ActivityMainBinding
+import com.example.dnd_sheet.ui.Tools
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.io.File
 
 
 class MainActivity : AppCompatActivity() {
 
     private var TAG: String = "MainActivity"
     private lateinit var binding: ActivityMainBinding
-    private val fileName = "character.json"
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val characterViewModel = ViewModelProvider(this)[Character::class.java]
+
+        Tools.init(this, characterViewModel)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -49,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         // Pressed callback for share button
         findViewById<Button>(R.id.shareButton).setOnClickListener {
 
-            val character = loadFromLocalJson() ?: return@setOnClickListener
+            val character = Tools.loadFromLocalJson() ?: return@setOnClickListener
             val characterString = Json.encodeToString(character)
 
             try {
@@ -123,34 +125,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.dispatchTouchEvent(event)
-    }
-
-    fun saveToJson(characterViewModel: Character): File {
-        val jsonString = Json.encodeToString(characterViewModel)
-
-        val filesDir = File(filesDir, "")
-
-        val file = File(filesDir, fileName)
-        file.writeText(jsonString)
-        return file
-    }
-
-    /**
-     * Loads character from JSON file
-     * /param characterViewModel - view model of character where json will be loaded
-     */
-    fun loadFromLocalJson(): Character? {
-        val filesDir = File(filesDir, "")
-        filesDir.mkdirs()
-        val file = File(filesDir, fileName)
-        if(!file.exists()) {
-            return null
-        }
-        val jsonString = file.readText()
-        if(jsonString.isEmpty()) {
-            return null
-        }
-        val character = Json.decodeFromString<Character>(jsonString)
-        return character
     }
 }
