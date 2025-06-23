@@ -31,8 +31,8 @@ import androidx.core.widget.addTextChangedListener
 import com.example.dnd_sheet.Character
 import com.example.dnd_sheet.Character.SavingThrows
 import com.example.dnd_sheet.Character.Skills
-import com.example.dnd_sheet.Character.StatType
-import com.example.dnd_sheet.Character.Stats
+import com.example.dnd_sheet.Character.MainStats
+import com.example.dnd_sheet.Character.TypesForEditTexts
 import com.example.dnd_sheet.R
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -57,13 +57,15 @@ class Tools {
             this.characterViewModel = characterViewModel
         }
 
-        fun saveToJson(characterViewModel: Character): File {
+        fun saveToJson(): File {
             val jsonString = Json.encodeToString(characterViewModel)
 
             val filesDir = File(context.filesDir, "")
 
             val file = File(filesDir, fileName)
             file.writeText(jsonString)
+            Log.i(TAG, "Saved to:$filesDir\\$fileName")
+            Log.i(TAG, "JSON:$jsonString")
             return file
         }
 
@@ -75,22 +77,37 @@ class Tools {
             val filesDir = File(context.filesDir, "")
             filesDir.mkdirs()
             val file = File(filesDir, fileName)
+            val errorPreMessage = "Failed to read file."
             if(!file.exists()) {
+                Log.e(TAG, "$errorPreMessage File $fileName is missing")
                 return null
             }
             val jsonString = file.readText()
             if(jsonString.isEmpty()) {
+                Log.e(TAG, "$errorPreMessage File $fileName is empty")
                 return null
             }
-            val character = Json.decodeFromString<Character>(jsonString)
-            return character
+            try {
+                characterViewModel = Json.decodeFromString<Character>(jsonString)
+                return characterViewModel
+            } catch (e: Exception) {
+                e.message?.let { Log.e(TAG, "$errorPreMessage $it") }
+            }
+            return null
         }
 
-        fun drawableToLayout(layout: ConstraintLayout, drawable: Int) {
+        /**
+         * Sets layout to be used in Tools
+         */
+        fun setLayout(layout: ConstraintLayout) {
+            drawableLayout = layout
+        }
+
+        fun drawableToLayout(drawable: Int) {
             // Change layout width x height ratio to match background image
             val bitmap = BitmapFactory.decodeResource(context.resources, drawable)
 
-            val layoutWidth = layout.measuredWidth
+            val layoutWidth = drawableLayout.measuredWidth
 
             // Using matrix to scale imageview to fit nicely to layout
             val matrix = Matrix()
@@ -106,14 +123,12 @@ class Tools {
             val imageView = ImageView(context)
             imageView.id = View.generateViewId()
             imageView.setImageBitmap(resizedBitmap)
-            layout.addView(imageView)
-
-            drawableLayout = layout
+            drawableLayout.addView(imageView)
 
             drawableSize = Size(resizedBitmap.width, resizedBitmap.height)
         }
 
-        fun createEditText(width: Double, height: Double, type: StatType, i: Int, textSize: Float = 14f): EditText {
+        fun createEditText(width: Double, height: Double, type: TypesForEditTexts, index: Int?, textSize: Float = 14f): EditText {
             val editTextView = EditText(this.context)
             editTextView.id = View.generateViewId()
             editTextView.layoutParams = ViewGroup.LayoutParams(width.rawWidth(),
@@ -124,9 +139,20 @@ class Tools {
             editTextView.setTextColor(Color.BLACK)
 
             when(type) {
-                StatType.Skills -> editTextView.setText(characterViewModel.skills[i].toString())
-                StatType.Stats -> editTextView.setText(characterViewModel.stats[i].toString())
-                StatType.SavingThrows -> editTextView.setText(characterViewModel.savingThrows[i].toString())
+                TypesForEditTexts.Skills -> index?.let{ editTextView.setText(characterViewModel.skills[index].toString()) }
+                TypesForEditTexts.MainStats -> index?.let{ editTextView.setText(characterViewModel.mainStats[index].toString()) }
+                TypesForEditTexts.SavingThrows -> index?.let{ editTextView.setText(characterViewModel.savingThrows[index].toString()) }
+                TypesForEditTexts.ARMOR_CLASS -> editTextView.setText(characterViewModel.armorClass.toString())
+                TypesForEditTexts.INITIATIVE -> editTextView.setText(characterViewModel.initiative.toString())
+                TypesForEditTexts.SPEED -> editTextView.setText(characterViewModel.speed.toString())
+                TypesForEditTexts.HIT_POINT_MAXIMUM -> editTextView.setText(characterViewModel.hitpointMaximum.toString())
+                TypesForEditTexts.CURRENT_HIT_POINTS -> editTextView.setText(characterViewModel.currentHitpoint.toString())
+                TypesForEditTexts.TEMPORARY_HIT_POINTS -> editTextView.setText(characterViewModel.temporaryHitpoint.toString())
+                TypesForEditTexts.HIT_DICE -> editTextView.setText(characterViewModel.hitDice.toString())
+                TypesForEditTexts.HIT_DICE_TOTAL -> editTextView.setText(characterViewModel.hitDiceTotal.toString())
+                TypesForEditTexts.SUCCESSES -> editTextView.setText(characterViewModel.successes.toString())
+                TypesForEditTexts.FAILURES -> editTextView.setText(characterViewModel.failures.toString())
+                else -> {}
             }
             return editTextView
         }
@@ -134,7 +160,7 @@ class Tools {
         fun createMainStatsViews() {
             for (i in 0 .. 5) {
                 // Creating edit texts for main stats
-                val mainStatEditText = createEditText(0.14, 0.03, StatType.Stats, i)
+                val mainStatEditText = createEditText(0.14, 0.03, TypesForEditTexts.MainStats, i)
 
                 // Creating text views for bonus stats
                 val bonusView = TextView(this.context)
@@ -159,14 +185,14 @@ class Tools {
 
                     removeZerosFromBegin(mainStatEditText)
 
-                    val stat: Stats = Stats.entries[i]
+                    val stat: MainStats = MainStats.entries[i]
                     if (!stat.equals(null)) {
-                        characterViewModel.stats[stat.ordinal] = mainValue
+                        characterViewModel.mainStats[stat.ordinal] = mainValue
                     }
                 })
 
-                setViewToStatsLayout(mainStatEditText, 0.155 to (0.06 + i.toDouble() * 0.109))
-                setViewToStatsLayout(bonusView, 0.155 to (0.095 + i.toDouble() * 0.109))
+                setViewToLayout(mainStatEditText, 0.155 to (0.06 + i.toDouble() * 0.109))
+                setViewToLayout(bonusView, 0.155 to (0.095 + i.toDouble() * 0.109))
             }
         }
 
@@ -187,24 +213,24 @@ class Tools {
                         return
                     }
                     removeZerosFromBegin(statText)
-                    characterViewModel.stats[i] = value
+                    characterViewModel.mainStats[i] = value
                 }
             }
 
             // Creating edit text for inspiration
-            val inspirationText = createEditText(0.14, 0.034, StatType.Stats, Stats.INSPIRATION.ordinal)
-            inspirationText.addTextChangedListener(CharacterStatUpdater(inspirationText, Stats.INSPIRATION.ordinal))
-            setViewToStatsLayout(inspirationText, 0.41 to 0.01)
+            val inspirationText = createEditText(0.14, 0.034, TypesForEditTexts.MainStats, MainStats.INSPIRATION.ordinal)
+            inspirationText.addTextChangedListener(CharacterStatUpdater(inspirationText, MainStats.INSPIRATION.ordinal))
+            setViewToLayout(inspirationText, 0.41 to 0.01)
 
             // Creating edit text for proficiency bonus
-            val proficiencyText = createEditText(0.145,0.034, StatType.Stats, Stats.PROFICIENCY_BONUS.ordinal)
+            val proficiencyText = createEditText(0.145,0.034, TypesForEditTexts.MainStats, MainStats.PROFICIENCY_BONUS.ordinal)
             proficiencyText.addTextChangedListener(
                 CharacterStatUpdater(
                     proficiencyText,
-                    Stats.PROFICIENCY_BONUS.ordinal
+                    MainStats.PROFICIENCY_BONUS.ordinal
                 )
             )
-            setViewToStatsLayout(proficiencyText, 0.41 to 0.067)
+            setViewToLayout(proficiencyText, 0.41 to 0.067)
         }
 
         fun createSavingThrows() {
@@ -224,13 +250,13 @@ class Tools {
 
             // Creating edit texts for saving throws
             for(savingThrow in SavingThrows.entries) {
-                val proficiencyButton = createRadioButton(savingThrow.ordinal, StatType.SavingThrows)
+                val proficiencyButton = createRadioButton(savingThrow.ordinal, TypesForEditTexts.SavingThrows)
 
-                setViewToStatsLayout(proficiencyButton, 0.445 to 0.129 + savingThrow.ordinal.toDouble() * 0.02065)
+                setViewToLayout(proficiencyButton, 0.445 to 0.129 + savingThrow.ordinal.toDouble() * 0.02065)
 
-                val savingThrowView = createEditText(0.08, 0.026, StatType.SavingThrows, savingThrow.ordinal, 10f)
+                val savingThrowView = createEditText(0.08, 0.026, TypesForEditTexts.SavingThrows, savingThrow.ordinal, 10f)
                 savingThrowView.addTextChangedListener(SavingThrowUpdater(savingThrowView, savingThrow))
-                setViewToStatsLayout(savingThrowView, 0.505 to 0.124+ savingThrow.ordinal.toDouble() * 0.0207)
+                setViewToLayout(savingThrowView, 0.505 to 0.124+ savingThrow.ordinal.toDouble() * 0.0207)
             }
         }
 
@@ -250,12 +276,12 @@ class Tools {
 
             // Creating edit texts for skills
             for(skills in Skills.entries) {
-                val proficiencyButton = createRadioButton(skills.ordinal, StatType.Skills)
-                setViewToStatsLayout(proficiencyButton, 0.445 to 0.305 + skills.ordinal.toDouble() * 0.0206)
+                val proficiencyButton = createRadioButton(skills.ordinal, TypesForEditTexts.Skills)
+                setViewToLayout(proficiencyButton, 0.445 to 0.305 + skills.ordinal.toDouble() * 0.0206)
 
-                val skillsView = createEditText(0.07, 0.026, StatType.Skills,  skills.ordinal, 10f)
+                val skillsView = createEditText(0.07, 0.026, TypesForEditTexts.Skills,  skills.ordinal, 10f)
                 skillsView.addTextChangedListener(SkillsUpdater(skillsView, skills))
-                setViewToStatsLayout(skillsView,  0.5 to 0.3 + skills.ordinal.toDouble() * 0.02065)
+                setViewToLayout(skillsView,  0.5 to 0.3 + skills.ordinal.toDouble() * 0.02065)
             }
         }
 
@@ -270,21 +296,21 @@ class Tools {
                         return
                     }
                     removeZerosFromBegin(statText)
-                    characterViewModel.stats[i] = value
+                    characterViewModel.mainStats[i] = value
                 }
             }
 
             // Creating edit text for passive wisdom
-            val passiveWisdomText = createEditText(0.145, 0.04, StatType.Stats, Stats.PASSIVE_WISDOM.ordinal)
-            passiveWisdomText.addTextChangedListener(CharacterStatUpdater(passiveWisdomText, Stats.PASSIVE_WISDOM.ordinal))
-            setViewToStatsLayout(passiveWisdomText, 0.082 to 0.71)
+            val passiveWisdomText = createEditText(0.145, 0.04, TypesForEditTexts.MainStats, MainStats.PASSIVE_WISDOM.ordinal)
+            passiveWisdomText.addTextChangedListener(CharacterStatUpdater(passiveWisdomText, MainStats.PASSIVE_WISDOM.ordinal))
+            setViewToLayout(passiveWisdomText, 0.082 to 0.71)
         }
 
         fun createProficienciesAndLanguages() {
             val layout = RelativeLayout(this.context)
             layout.id = View.generateViewId()
             layout.layoutParams = ViewGroup.LayoutParams(0.85.rawWidth(), 0.205.rawHeight())
-            setViewToStatsLayout(layout, 0.1 to 0.765)
+            setViewToLayout(layout, 0.1 to 0.765)
 
             val nestedScrollView = NestedScrollView(this.context)
             nestedScrollView.id = View.generateViewId()
@@ -308,7 +334,7 @@ class Tools {
         }
 
         // ToDo: RadioButton icon is not same size for different display resolutions and dpi. Make something to match those
-        private fun createRadioButton(i: Int, type: StatType): RadioButton {
+        private fun createRadioButton(i: Int, type: TypesForEditTexts): RadioButton {
             val radioButton = RadioButton(this.context)
             val width = 0.038
             val height = 0.012
@@ -356,16 +382,16 @@ class Tools {
                     }
                     button.isChecked = m_previousStatus
                     when(type) {
-                        StatType.Skills -> characterViewModel.skillsProficiencyBonuses[i] = button.isChecked
-                        StatType.SavingThrows -> characterViewModel.savingThrowProficiencyBonuses[i] = button.isChecked
+                        TypesForEditTexts.Skills -> characterViewModel.skillsProficiencyBonuses[i] = button.isChecked
+                        TypesForEditTexts.SavingThrows -> characterViewModel.savingThrowProficiencyBonuses[i] = button.isChecked
                         else -> {}
                     }
                 }
             })
 
             when(type) {
-                StatType.Skills -> radioButton.isChecked = characterViewModel.skillsProficiencyBonuses[i]
-                StatType.SavingThrows -> radioButton.isChecked = characterViewModel.savingThrowProficiencyBonuses[i]
+                TypesForEditTexts.Skills -> radioButton.isChecked = characterViewModel.skillsProficiencyBonuses[i]
+                TypesForEditTexts.SavingThrows -> radioButton.isChecked = characterViewModel.savingThrowProficiencyBonuses[i]
                 else -> {}
             }
             return radioButton
@@ -374,7 +400,7 @@ class Tools {
 
 
 
-        private fun setViewToStatsLayout(view: View, position: Pair<Double, Double>) {
+        fun setViewToLayout(view: View, position: Pair<Double, Double>) {
             drawableLayout.addView(view)
 
             val constraintSet = ConstraintSet()

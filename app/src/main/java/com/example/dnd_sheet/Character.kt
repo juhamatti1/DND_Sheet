@@ -12,7 +12,7 @@ class Character : ViewModel() {
 //    lateinit var primary_race: Races
 //    var experience: Float = 0f
 
-    var stats = IntArray(Stats.entries.size) { 0 }
+    var mainStats = IntArray(MainStats.entries.size) { 0 }
     var savingThrows = IntArray(SavingThrows.entries.size) { 0 }
     var skills = IntArray(Skills.entries.size) { 0 }
     var armorClass: Int = 0
@@ -32,10 +32,13 @@ class Character : ViewModel() {
 //    lateinit var saving_throws: HashMap<Saving_throws, Int>
 //    lateinit var skills: HashMap<Skills, Boolean>
 
-    enum class StatType { Stats, SavingThrows, Skills }
-
-    enum class Stats {
+    enum class MainStats {
         STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA, INSPIRATION, PROFICIENCY_BONUS, PASSIVE_WISDOM
+    }
+
+    enum class TypesForEditTexts {
+        MainStats, SavingThrows, Skills, ARMOR_CLASS, INITIATIVE, SPEED, HIT_POINT_MAXIMUM,
+        CURRENT_HIT_POINTS, TEMPORARY_HIT_POINTS, HIT_DICE, HIT_DICE_TOTAL, SUCCESSES, FAILURES
     }
 
     enum class SavingThrows {
@@ -46,11 +49,6 @@ class Character : ViewModel() {
         ACROBATICS, ANIMAL_HANDLING, ARCANA, ATHLETICS, DECEPTION, HISTORY, INSIGHT, INTIMIDATION,
         INVESTIGATION, MEDICINE, NATURE, PERCEPTION, PERFORMANCE, PERSUASION, RELIGION,
         SLEIGHT_OF_HAND, STEALTH, SURVIVAL
-    }
-
-    enum class EquipmentStats {
-        ARMOR_CLASS, INITIATIVE, SPEED, HIT_POINT_MAXIMUM, CURRENT_HIT_POINTS, TEMPORARY_HIT_POINTS,
-        HIT_DICE, HIT_DICE_TOTAL, SUCCESSES, FAILURES,
     }
 
     class ATTACKS_SPELLCASTING {
