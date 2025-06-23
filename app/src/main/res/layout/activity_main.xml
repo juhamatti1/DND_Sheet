@@ -14,6 +14,15 @@
         app:layout_constraintRight_toRightOf="parent"
         />
 
+    <Button
+        android:id="@+id/openButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:background="@drawable/open_button"
+        app:layout_constraintTop_toBottomOf="@id/shareButton"
+        app:layout_constraintRight_toRightOf="parent"
+        />
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/nav_view"
         android:layout_width="0dp"

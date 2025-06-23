@@ -1,7 +1,6 @@
 package com.example.dnd_sheet.ui.status
 
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -454,7 +453,7 @@ class StatusFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         // Check if there is already local character file. Load it if yes
-        val tempCharacter = (activity as MainActivity).loadFromJson()
+        val tempCharacter = (activity as MainActivity).loadFromLocalJson()
         if(tempCharacter == null) {
             Toast.makeText(context, "Failed to load json", Toast.LENGTH_SHORT).show()
             return
