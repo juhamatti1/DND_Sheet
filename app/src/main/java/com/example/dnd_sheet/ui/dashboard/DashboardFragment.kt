@@ -1,7 +1,7 @@
 package com.example.dnd_sheet.ui.dashboard
 
-import android.graphics.Color
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +25,6 @@ class DashboardFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
     lateinit var  equipmentLayout : ConstraintLayout
-    private lateinit var equipmentSize : Pair<Int, Int>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,9 +52,22 @@ class DashboardFragment : Fragment() {
                 Tools.drawableToLayout(R.drawable.equipment)
 
                 val armorView = Tools.createEditText(0.2,0.06, TypesForEditTexts.ARMOR_CLASS, null, 28f)
-                armorView.setBackgroundColor(Color.RED)
-                armorView.background.alpha = 25
                 Tools.setViewToLayout(armorView, 0.1 to 0.02)
+
+                val initiativeView = Tools.createEditText(0.25,0.06, TypesForEditTexts.INITIATIVE, null, 28f)
+                Tools.setViewToLayout(initiativeView, 0.372 to 0.02)
+
+                val speedView = Tools.createEditText(0.25,0.06, TypesForEditTexts.SPEED, null, 28f)
+                Tools.setViewToLayout(speedView, 0.685 to 0.02)
+
+                val hitPointsMaxView = Tools.createEditText(0.5,0.03, TypesForEditTexts.HIT_POINT_MAXIMUM, null, 14f)
+                hitPointsMaxView.gravity = Gravity.BOTTOM
+                Tools.setViewToLayout(hitPointsMaxView, 0.44 to 0.112)
+
+                val currentHitPointsMaxView = Tools.createEditText(0.4,0.05, TypesForEditTexts.HIT_POINT_MAXIMUM, null, 28f)
+//                currentHitPointsMaxView.setBackgroundColor(Color.RED)
+//                currentHitPointsMaxView.background.alpha = 40
+                Tools.setViewToLayout(currentHitPointsMaxView, 0.32 to 0.14)
             }
         })
     }
@@ -63,13 +75,5 @@ class DashboardFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    private fun Double.rawWidth(): Int {
-        return (this * equipmentSize.first).toInt()
-    }
-
-    private fun Double.rawHeight(): Int {
-        return (this * equipmentSize.second).toInt()
     }
 }

@@ -17,7 +17,6 @@ class StatusFragment : Fragment() {
     private var _binding: FragmentStatusBinding? = null
     private val TAG: String = "HomeFragment"
     lateinit var  statsLayout : ConstraintLayout
-    private lateinit var statsSize : Pair<Int, Int>
 
 
     // This property is only valid between onCreateView and

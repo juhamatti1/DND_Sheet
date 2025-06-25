@@ -454,7 +454,7 @@ class Tools {
             return (this * drawableSize.width).toInt()
         }
 
-        private fun Double.rawHeight(): Int {
+        fun Double.rawHeight(): Int {
             return (this * drawableSize.height).toInt()
         }
     }
