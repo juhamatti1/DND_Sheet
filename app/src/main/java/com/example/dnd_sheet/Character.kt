@@ -1,11 +1,38 @@
 package com.example.dnd_sheet
 
-import androidx.lifecycle.ViewModel
 import kotlinx.serialization.Serializable
 
 
 @Serializable
-class Character : ViewModel() {
+class Character private constructor() {
+    companion object {
+
+        // @Volatile, you ensure that:
+        // - Reads and writes to the instance are not reordered by the compiler or processor.
+        // - Changes made by one thread are visible to other threads immediately.
+        @Volatile private var instance: Character? = null
+
+
+        /**
+         * If Character instance is null, lock the code block with synchronized,
+         * check again if character is null, create a new Character instance and assign it to instance.
+         * @param newCharacter Character to be loaded. Used when loading character from json file
+         */
+        fun getInstance(newCharacter: Character? = null): Character {
+            instance ?: synchronized(this) {
+                instance ?: Character().also { instance = it }
+            }
+
+            newCharacter ?: return instance!!
+
+            synchronized(this) {
+                instance = newCharacter
+            }
+
+            return instance!!
+        }
+    }
+
     var name: String = ""
     // Need to comment these until they are actually used for serialization
 //    lateinit var primary_class: DND_classes
@@ -21,10 +48,15 @@ class Character : ViewModel() {
     var hitpointMaximum: Int = 0
     var currentHitpoint: Int = 0
     var temporaryHitpoint: Int = 0
-    var hitDice: Int = 0
+    var hitDice: String = "0"
     var hitDiceTotal: Int = 0
-    var successes: Int = 0
-    var failures: Int = 0
+    val attacksSpellcasting = Array(3) { mutableMapOf(
+        Attacks_spellcasting.NAME.ordinal to "",
+        Attacks_spellcasting.ATK_BONUS.ordinal to "",
+        Attacks_spellcasting.DAMAGE_TYPE.ordinal to ""
+    ) }
+    var failures = BooleanArray(3) { false }
+    var successes = BooleanArray(3) { false }
     var skillsProficiencyBonuses = BooleanArray(Skills.entries.size) { false }
     var savingThrowProficiencyBonuses = BooleanArray(SavingThrows.entries.size) { false }
     var proficienciesAndLanguages = ""
@@ -37,8 +69,9 @@ class Character : ViewModel() {
     }
 
     enum class TypesForEditTexts {
-        MainStats, SavingThrows, Skills, ARMOR_CLASS, INITIATIVE, SPEED, HIT_POINT_MAXIMUM,
-        CURRENT_HIT_POINTS, TEMPORARY_HIT_POINTS, HIT_DICE, HIT_DICE_TOTAL, SUCCESSES, FAILURES
+        MAINSTATS, SAVING_THROWS, SKILLS, ARMOR_CLASS, INITIATIVE, SPEED, HIT_POINT_MAXIMUM,
+        CURRENT_HIT_POINTS, TEMPORARY_HIT_POINTS, HIT_DICE, HIT_DICE_TOTAL, SUCCESSES, FAILURES,
+        ATTACKS_SPELLCASTING
     }
 
     enum class SavingThrows {
@@ -51,10 +84,8 @@ class Character : ViewModel() {
         SLEIGHT_OF_HAND, STEALTH, SURVIVAL
     }
 
-    class ATTACKS_SPELLCASTING {
-        enum class Stats {
-            NAME, ATK_BONUS, DAMAGE, DAMAGE_TYPE
-        }
+    enum class Attacks_spellcasting {
+        NAME, ATK_BONUS, DAMAGE_TYPE
     }
 
     enum class EQUIPMENT {
