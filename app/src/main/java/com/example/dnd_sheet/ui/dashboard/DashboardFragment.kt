@@ -49,11 +49,13 @@ class DashboardFragment : Fragment() {
                 //Remove the listener before proceeding
                 equipmentLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
 
+                val ctx = Tools.checkContext(context)
+
                 Tools.setLayout(equipmentLayout)
-                Tools.drawableToLayout(R.drawable.equipment)
+                Tools.drawableToLayout(R.drawable.equipment, ctx)
 
                 val armorView =
-                    Tools.createEditText(0.2, 0.05, TypesForEditTexts.ARMOR_CLASS, textSize = 28f)
+                    Tools.createEditText(0.2, 0.05, TypesForEditTexts.ARMOR_CLASS, textSize = 28f, context = ctx)
                 Tools.setViewToLayout(armorView, 0.1 to 0.026)
                 armorView.setOnFocusChangeListener { view, hasFocus ->
                     if (!hasFocus) {
@@ -63,7 +65,7 @@ class DashboardFragment : Fragment() {
                 }
 
                 val initiativeView =
-                    Tools.createEditText(0.25, 0.06, TypesForEditTexts.INITIATIVE, textSize = 28f)
+                    Tools.createEditText(0.25, 0.06, TypesForEditTexts.INITIATIVE, textSize = 28f, context = ctx)
                 Tools.setViewToLayout(initiativeView, 0.372 to 0.02)
                 initiativeView.setOnFocusChangeListener { view, hasFocus ->
                     if (!hasFocus) {
@@ -73,7 +75,7 @@ class DashboardFragment : Fragment() {
                 }
 
                 val speedView =
-                    Tools.createEditText(0.25, 0.06, TypesForEditTexts.SPEED, textSize = 28f)
+                    Tools.createEditText(0.25, 0.06, TypesForEditTexts.SPEED, textSize = 28f, context = ctx)
                 Tools.setViewToLayout(speedView, 0.685 to 0.02)
                 speedView.setOnFocusChangeListener { view, hasFocus ->
                     if (!hasFocus) {
@@ -83,7 +85,7 @@ class DashboardFragment : Fragment() {
                 }
 
                 val hitPointsMaxView =
-                    Tools.createEditText(0.5, 0.03, TypesForEditTexts.HIT_POINT_MAXIMUM)
+                    Tools.createEditText(0.5, 0.03, TypesForEditTexts.HIT_POINT_MAXIMUM, context = ctx)
                 hitPointsMaxView.gravity = Gravity.BOTTOM
                 Tools.setViewToLayout(hitPointsMaxView, 0.44 to 0.112)
                 hitPointsMaxView.setOnFocusChangeListener { view, hasFocus ->
@@ -97,7 +99,7 @@ class DashboardFragment : Fragment() {
                     0.4,
                     0.05,
                     TypesForEditTexts.CURRENT_HIT_POINTS,
-                    textSize = 28f
+                    textSize = 28f, context = ctx
                 )
                 Tools.setViewToLayout(currentHitPointsView, 0.32 to 0.14)
                 currentHitPointsView.setOnFocusChangeListener { view, hasFocus ->
@@ -111,7 +113,7 @@ class DashboardFragment : Fragment() {
                     0.4,
                     0.05,
                     TypesForEditTexts.TEMPORARY_HIT_POINTS,
-                    textSize = 28f
+                    textSize = 28f, context = ctx
                 )
                 Tools.setViewToLayout(tempHitPointsView, 0.32 to 0.22)
                 tempHitPointsView.setOnFocusChangeListener { view, hasFocus ->
@@ -122,7 +124,7 @@ class DashboardFragment : Fragment() {
                 }
 
                 val totalHitDiceView =
-                    Tools.createEditText(0.26, 0.03, TypesForEditTexts.HIT_DICE_TOTAL)
+                    Tools.createEditText(0.26, 0.03, TypesForEditTexts.HIT_DICE_TOTAL, context = ctx)
                 totalHitDiceView.gravity = Gravity.BOTTOM
                 Tools.setViewToLayout(totalHitDiceView, 0.2 to 0.298)
                 totalHitDiceView.setOnFocusChangeListener { view, hasFocus ->
@@ -137,7 +139,7 @@ class DashboardFragment : Fragment() {
                     0.04,
                     TypesForEditTexts.HIT_DICE,
                     textSize = 28f,
-                    inputType = InputType.TYPE_CLASS_TEXT
+                    inputType = InputType.TYPE_CLASS_TEXT, context = ctx
                 )
                 Tools.setViewToLayout(hitDiceView, 0.15 to 0.317)
                 hitDiceView.setOnFocusChangeListener { view, hasFocus ->
@@ -149,7 +151,7 @@ class DashboardFragment : Fragment() {
                 Character.getInstance().successes.forEachIndexed { index, _ ->
                     run {
                         val successesRadioButton =
-                            Tools.createRadioButton(index, TypesForEditTexts.SUCCESSES, 0.06, 0.015)
+                            Tools.createRadioButton(index, TypesForEditTexts.SUCCESSES, 0.06, 0.015, context = ctx)
                         Tools.setViewToLayout(successesRadioButton, 0.72 + index * 0.069 to 0.304)
                     }
                 }
@@ -157,7 +159,7 @@ class DashboardFragment : Fragment() {
                 Character.getInstance().failures.forEachIndexed { index, _ ->
                     run {
                         val failuresRadioButton =
-                            Tools.createRadioButton(index, TypesForEditTexts.FAILURES, 0.06, 0.015)
+                            Tools.createRadioButton(index, TypesForEditTexts.FAILURES, 0.06, 0.015, context = ctx)
                         Tools.setViewToLayout(failuresRadioButton, 0.72 + index * 0.069 to 0.327)
                     }
                 }
@@ -176,7 +178,7 @@ class DashboardFragment : Fragment() {
                         18f,
                         Gravity.START,
                         InputType.TYPE_CLASS_TEXT,
-                        row
+                        row, context = ctx
                     )
                     Tools.setViewToLayout(nameView, 0.075 to 0.417 + row * 0.032)
                     nameView.setPadding(0)
@@ -194,7 +196,7 @@ class DashboardFragment : Fragment() {
                         18f,
                         Gravity.START,
                         InputType.TYPE_CLASS_TEXT,
-                        row
+                        row, context = ctx
                     )
                     Tools.setViewToLayout(atkBonusView, 0.44 to 0.417 + row * 0.032)
                     atkBonusView.setPadding(0)
@@ -212,7 +214,7 @@ class DashboardFragment : Fragment() {
                         18f,
                         Gravity.START,
                         InputType.TYPE_CLASS_TEXT,
-                        row
+                        row, context = ctx
                     )
                     Tools.setViewToLayout(damageTypeView, 0.63 to 0.417 + row * 0.032)
                     damageTypeView.setPadding(0)
@@ -234,12 +236,12 @@ class DashboardFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        Tools.saveToJson()
+        Tools.saveToJson(Tools.checkContext(context))
     }
 
     override fun onResume() {
         super.onResume()
         // Check if there is already local character file. Load it if yes
-        Tools.loadFromLocalJson()
+        Tools.loadFromLocalJson(Tools.checkContext(context))
     }
 }

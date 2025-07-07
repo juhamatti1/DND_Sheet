@@ -29,9 +29,9 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.widget.NestedScrollView
 import androidx.core.widget.addTextChangedListener
 import com.example.dnd_sheet.Character
+import com.example.dnd_sheet.Character.MainStats
 import com.example.dnd_sheet.Character.SavingThrows
 import com.example.dnd_sheet.Character.Skills
-import com.example.dnd_sheet.Character.MainStats
 import com.example.dnd_sheet.Character.TypesForEditTexts
 import com.example.dnd_sheet.R
 import kotlinx.serialization.encodeToString
@@ -41,22 +41,18 @@ import java.io.File
 class Tools {
     companion object {
         private const val TAG: String = "Tools"
+
         // Name for json file
         private val fileName = "character.json"
-        // Context of the Main activity
-        private lateinit var context: Context
+
         // Size of drawable image
         private lateinit var drawableSize: Size
+
         // Layout of the drawable
         private lateinit var drawableLayout: ConstraintLayout
 
-        fun init(context: Context) {
-            this.context = context
-        }
-
-        fun saveToJson(): File {
+        fun saveToJson(context: Context): File {
             val jsonString = Json.encodeToString(Character.getInstance())
-
             val filesDir = File(context.filesDir, "")
 
             val file = File(filesDir, fileName)
@@ -68,17 +64,17 @@ class Tools {
          * Loads character from JSON file
          * /param Character.getInstance() - view model of character where json will be loaded
          */
-        fun loadFromLocalJson(): Character? {
+        fun loadFromLocalJson(context: Context): Character? {
             val filesDir = File(context.filesDir, "")
             filesDir.mkdirs()
             val file = File(filesDir, fileName)
             val errorPreMessage = "Failed to read file."
-            if(!file.exists()) {
+            if (!file.exists()) {
                 Log.e(TAG, "$errorPreMessage File $fileName is missing")
                 return null
             }
             val jsonString = file.readText()
-            if(jsonString.isEmpty()) {
+            if (jsonString.isEmpty()) {
                 Log.e(TAG, "$errorPreMessage File $fileName is empty")
                 return null
             }
@@ -97,7 +93,7 @@ class Tools {
             drawableLayout = layout
         }
 
-        fun drawableToLayout(drawable: Int) {
+        fun drawableToLayout(drawable: Int, context: Context) {
             // Change layout width x height ratio to match background image
             val bitmap = BitmapFactory.decodeResource(context.resources, drawable)
 
@@ -108,8 +104,10 @@ class Tools {
             val scale = layoutWidth / bitmap.width.toFloat()
             matrix.postScale(scale, scale)
 
-            val resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width,
-                bitmap.height, matrix, false)
+            val resizedBitmap = Bitmap.createBitmap(
+                bitmap, 0, 0, bitmap.width,
+                bitmap.height, matrix, false
+            )
 
             // Recycle old bitmap to avoid memory leak
             bitmap.recycle()
@@ -122,21 +120,33 @@ class Tools {
             drawableSize = Size(resizedBitmap.width, resizedBitmap.height)
         }
 
-        fun createEditText(width: Double, height: Double, type: TypesForEditTexts, enumOrdinal: Int? = null, textSize: Float = 14f, gravity: Int = Gravity.CENTER, inputType: Int = InputType.TYPE_CLASS_NUMBER, index: Int? = null): EditText {
-            val editTextView = EditText(this.context)
+        fun createEditText(
+            width: Double,
+            height: Double,
+            type: TypesForEditTexts,
+            enumOrdinal: Int? = null,
+            textSize: Float = 14f,
+            gravity: Int = Gravity.CENTER,
+            inputType: Int = InputType.TYPE_CLASS_NUMBER,
+            index: Int? = null,
+            context: Context
+        ): EditText {
+            val editTextView = EditText(context)
             editTextView.id = View.generateViewId()
-            editTextView.layoutParams = ViewGroup.LayoutParams(width.rawWidth(),
-                height.rawHeight())
+            editTextView.layoutParams = ViewGroup.LayoutParams(
+                width.rawWidth(),
+                height.rawHeight()
+            )
             editTextView.textSize = textSize
             editTextView.gravity = gravity
             editTextView.inputType = inputType
             editTextView.setTextColor(Color.BLACK)
             editTextView.background = null
 
-            when(type) {
-                TypesForEditTexts.SKILLS -> enumOrdinal?.let{ editTextView.setText(Character.getInstance().skills[enumOrdinal].toString()) }
-                TypesForEditTexts.MAINSTATS -> enumOrdinal?.let{ editTextView.setText(Character.getInstance().mainStats[enumOrdinal].toString()) }
-                TypesForEditTexts.SAVING_THROWS -> enumOrdinal?.let{ editTextView.setText(Character.getInstance().savingThrows[enumOrdinal].toString()) }
+            when (type) {
+                TypesForEditTexts.SKILLS -> enumOrdinal?.let { editTextView.setText(Character.getInstance().skills[enumOrdinal].toString()) }
+                TypesForEditTexts.MAINSTATS -> enumOrdinal?.let { editTextView.setText(Character.getInstance().mainStats[enumOrdinal].toString()) }
+                TypesForEditTexts.SAVING_THROWS -> enumOrdinal?.let { editTextView.setText(Character.getInstance().savingThrows[enumOrdinal].toString()) }
                 TypesForEditTexts.ARMOR_CLASS -> editTextView.setText(Character.getInstance().armorClass.toString())
                 TypesForEditTexts.INITIATIVE -> editTextView.setText(Character.getInstance().initiative.toString())
                 TypesForEditTexts.SPEED -> editTextView.setText(Character.getInstance().speed.toString())
@@ -147,8 +157,8 @@ class Tools {
                 TypesForEditTexts.HIT_DICE_TOTAL -> editTextView.setText(Character.getInstance().hitDiceTotal.toString())
                 TypesForEditTexts.SUCCESSES -> editTextView.setText(Character.getInstance().successes.toString())
                 TypesForEditTexts.FAILURES -> editTextView.setText(Character.getInstance().failures.toString())
-                TypesForEditTexts.ATTACKS_SPELLCASTING ->  {
-                    if(index != null) {
+                TypesForEditTexts.ATTACKS_SPELLCASTING -> {
+                    if (index != null) {
                         editTextView.setText(
                             Character.getInstance().attacksSpellcasting[index][enumOrdinal] ?: ""
                         )
@@ -158,13 +168,13 @@ class Tools {
             return editTextView
         }
 
-        fun createMainStatsViews() {
-            for (i in 0 .. 5) {
+        fun createMainStatsViews(context: Context) {
+            for (i in 0..5) {
                 // Creating edit texts for main stats
-                val mainStatEditText = createEditText(0.14, 0.03, TypesForEditTexts.MAINSTATS, i)
+                val mainStatEditText = createEditText(0.14, 0.03, TypesForEditTexts.MAINSTATS, i, context = context)
 
                 // Creating text views for bonus stats
-                val bonusView = TextView(this.context)
+                val bonusView = TextView(context)
                 bonusView.id = View.generateViewId()
                 bonusView.layoutParams = ViewGroup.LayoutParams(0.14.rawWidth(), 0.03.rawHeight())
                 bonusView.textSize = 20f
@@ -177,7 +187,7 @@ class Tools {
                 mainStatEditText.addTextChangedListener(afterTextChanged = listener@{ editedText: Editable? ->
                     // Logic for increasing/decreasing stat bonus based on typed main value
                     val mainValue: Int = stringToInt(editedText.toString())
-                    if(mainValue == Int.MIN_VALUE) {
+                    if (mainValue == Int.MIN_VALUE) {
                         return@listener
                     }
 
@@ -197,9 +207,8 @@ class Tools {
             }
         }
 
-        fun createInspirationAndProficiencyBonusViews() {
+        fun createInspirationAndProficiencyBonusViews(context: Context) {
 
-            val context2 = this.context
             class CharacterStatUpdater(val statText: EditText, val i: Int) : TextWatcher {
                 override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
                 override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -210,7 +219,7 @@ class Tools {
                     } catch (e: NumberFormatException) {
                         toastText = "Invalid number"
                         Log.e(TAG, toastText)
-                        Toast.makeText(context2, toastText, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
                         return
                     }
                     removeZerosFromBegin(statText)
@@ -219,12 +228,30 @@ class Tools {
             }
 
             // Creating edit text for inspiration
-            val inspirationText = createEditText(0.14, 0.034, TypesForEditTexts.MAINSTATS, MainStats.INSPIRATION.ordinal)
-            inspirationText.addTextChangedListener(CharacterStatUpdater(inspirationText, MainStats.INSPIRATION.ordinal))
+            val inspirationText =
+                createEditText(
+                    0.14,
+                    0.034,
+                    TypesForEditTexts.MAINSTATS,
+                    MainStats.INSPIRATION.ordinal,
+                    context = context
+                )
+            inspirationText.addTextChangedListener(
+                CharacterStatUpdater(
+                    inspirationText,
+                    MainStats.INSPIRATION.ordinal
+                )
+            )
             setViewToLayout(inspirationText, 0.41 to 0.01)
 
             // Creating edit text for proficiency bonus
-            val proficiencyText = createEditText(0.145,0.034, TypesForEditTexts.MAINSTATS, MainStats.PROFICIENCY_BONUS.ordinal)
+            val proficiencyText = createEditText(
+                0.145,
+                0.034,
+                TypesForEditTexts.MAINSTATS,
+                MainStats.PROFICIENCY_BONUS.ordinal,
+                context = context
+            )
             proficiencyText.addTextChangedListener(
                 CharacterStatUpdater(
                     proficiencyText,
@@ -234,14 +261,14 @@ class Tools {
             setViewToLayout(proficiencyText, 0.41 to 0.067)
         }
 
-        fun createSavingThrows() {
+        fun createSavingThrows(context: Context) {
             class SavingThrowUpdater(val statText: EditText, val savingThrows: SavingThrows) :
                 TextWatcher {
                 override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
                 override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
                 override fun afterTextChanged(newText: Editable?) {
                     val value = stringToInt(newText.toString())
-                    if(value == Int.MIN_VALUE) {
+                    if (value == Int.MIN_VALUE) {
                         return
                     }
                     removeZerosFromBegin(statText)
@@ -250,24 +277,43 @@ class Tools {
             }
 
             // Creating edit texts for saving throws
-            for(savingThrow in SavingThrows.entries) {
-                val proficiencyButton = createRadioButton(savingThrow.ordinal, TypesForEditTexts.SAVING_THROWS)
+            for (savingThrow in SavingThrows.entries) {
+                val proficiencyButton =
+                    createRadioButton(savingThrow.ordinal, TypesForEditTexts.SAVING_THROWS, context = context)
 
-                setViewToLayout(proficiencyButton, 0.445 to 0.129 + savingThrow.ordinal.toDouble() * 0.02065)
+                setViewToLayout(
+                    proficiencyButton,
+                    0.445 to 0.129 + savingThrow.ordinal.toDouble() * 0.02065
+                )
 
-                val savingThrowView = createEditText(0.08, 0.026, TypesForEditTexts.SAVING_THROWS, savingThrow.ordinal, 10f)
-                savingThrowView.addTextChangedListener(SavingThrowUpdater(savingThrowView, savingThrow))
-                setViewToLayout(savingThrowView, 0.505 to 0.124+ savingThrow.ordinal.toDouble() * 0.0207)
+                val savingThrowView = createEditText(
+                    0.08,
+                    0.026,
+                    TypesForEditTexts.SAVING_THROWS,
+                    savingThrow.ordinal,
+                    10f,
+                    context = context
+                )
+                savingThrowView.addTextChangedListener(
+                    SavingThrowUpdater(
+                        savingThrowView,
+                        savingThrow
+                    )
+                )
+                setViewToLayout(
+                    savingThrowView,
+                    0.505 to 0.124 + savingThrow.ordinal.toDouble() * 0.0207
+                )
             }
         }
 
-        fun createSkills() {
+        fun createSkills(context: Context) {
             class SkillsUpdater(val statText: EditText, val skills: Skills) : TextWatcher {
                 override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
                 override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
                 override fun afterTextChanged(newText: Editable?) {
                     val value = stringToInt(newText.toString())
-                    if(value == Int.MIN_VALUE) {
+                    if (value == Int.MIN_VALUE) {
                         return
                     }
                     removeZerosFromBegin(statText)
@@ -276,17 +322,21 @@ class Tools {
             }
 
             // Creating edit texts for skills
-            for(skills in Skills.entries) {
-                val proficiencyButton = createRadioButton(skills.ordinal, TypesForEditTexts.SKILLS)
-                setViewToLayout(proficiencyButton, 0.445 to 0.305 + skills.ordinal.toDouble() * 0.0206)
+            for (skills in Skills.entries) {
+                val proficiencyButton = createRadioButton(skills.ordinal, TypesForEditTexts.SKILLS, context = context)
+                setViewToLayout(
+                    proficiencyButton,
+                    0.445 to 0.305 + skills.ordinal.toDouble() * 0.0206
+                )
 
-                val skillsView = createEditText(0.07, 0.026, TypesForEditTexts.SKILLS,  skills.ordinal, 10f)
+                val skillsView =
+                    createEditText(0.07, 0.026, TypesForEditTexts.SKILLS, skills.ordinal, 10f, context = context)
                 skillsView.addTextChangedListener(SkillsUpdater(skillsView, skills))
-                setViewToLayout(skillsView,  0.5 to 0.3 + skills.ordinal.toDouble() * 0.02065)
+                setViewToLayout(skillsView, 0.5 to 0.3 + skills.ordinal.toDouble() * 0.02065)
             }
         }
 
-        fun createPassiveWisdom() {
+        fun createPassiveWisdom(context: Context) {
             class CharacterStatUpdater(val statText: EditText, val i: Int) : TextWatcher {
                 override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
                 override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
@@ -302,32 +352,43 @@ class Tools {
             }
 
             // Creating edit text for passive wisdom
-            val passiveWisdomText = createEditText(0.145, 0.04, TypesForEditTexts.MAINSTATS, MainStats.PASSIVE_WISDOM.ordinal)
-            passiveWisdomText.addTextChangedListener(CharacterStatUpdater(passiveWisdomText, MainStats.PASSIVE_WISDOM.ordinal))
+            val passiveWisdomText = createEditText(
+                0.145,
+                0.04,
+                TypesForEditTexts.MAINSTATS,
+                MainStats.PASSIVE_WISDOM.ordinal,
+                context = context
+            )
+            passiveWisdomText.addTextChangedListener(
+                CharacterStatUpdater(
+                    passiveWisdomText,
+                    MainStats.PASSIVE_WISDOM.ordinal
+                )
+            )
             setViewToLayout(passiveWisdomText, 0.082 to 0.71)
         }
 
-        fun createProficienciesAndLanguages() {
-            val layout = RelativeLayout(this.context)
+        fun createProficienciesAndLanguages(context: Context) {
+            val layout = RelativeLayout(context)
             layout.id = View.generateViewId()
             layout.layoutParams = ViewGroup.LayoutParams(0.85.rawWidth(), 0.205.rawHeight())
             setViewToLayout(layout, 0.1 to 0.765)
 
-            val nestedScrollView = NestedScrollView(this.context)
+            val nestedScrollView = NestedScrollView(context)
             nestedScrollView.id = View.generateViewId()
             nestedScrollView.isFillViewport = true
             nestedScrollView.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
 
             layout.addView(nestedScrollView)
 
-            val editText = EditText(this.context)
+            val editText = EditText(context)
             editText.id = View.generateViewId()
             editText.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
             editText.setTextColor(Color.BLACK)
             editText.textSize = 15f
             editText.gravity = Gravity.START or Gravity.TOP
             editText.setText(Character.getInstance().proficienciesAndLanguages)
-            editText.addTextChangedListener (afterTextChanged = { editedText: Editable? ->
+            editText.addTextChangedListener(afterTextChanged = { editedText: Editable? ->
                 Character.getInstance().proficienciesAndLanguages = editedText.toString()
             })
 
@@ -335,8 +396,14 @@ class Tools {
         }
 
         // ToDo: RadioButton icon is not same size for different display resolutions and dpi. Make something to match those
-        fun createRadioButton(i: Int, type: TypesForEditTexts, width: Double = 0.038, height: Double = 0.012): RadioButton {
-            val radioButton = RadioButton(this.context)
+        fun createRadioButton(
+            i: Int,
+            type: TypesForEditTexts,
+            width: Double = 0.038,
+            height: Double = 0.012,
+            context: Context
+        ): RadioButton {
+            val radioButton = RadioButton(context)
             radioButton.id = View.generateViewId()
 
             val layoutWidth = (width.rawWidth() * 1.5).toInt()
@@ -346,23 +413,38 @@ class Tools {
             radioButton.layoutParams = layoutParams
 
             // Resize check and uncheck-drawables to correct size
-            val checkedDrawable = ResourcesCompat.getDrawable(this.context.resources, R.drawable.baseline_radio_button_checked_24, null)
-            val uncheckedDrawable = ResourcesCompat.getDrawable(this.context.resources, R.drawable.baseline_radio_button_unchecked_24, null)
+            val checkedDrawable = ResourcesCompat.getDrawable(
+                context.resources,
+                R.drawable.baseline_radio_button_checked_24,
+                null
+            )
+            val uncheckedDrawable = ResourcesCompat.getDrawable(
+                context.resources,
+                R.drawable.baseline_radio_button_unchecked_24,
+                null
+            )
 
             assert(uncheckedDrawable != null && checkedDrawable != null)
 
             val checkedBitmap = checkedDrawable!!.toBitmap()
             val uncheckedBitmap = uncheckedDrawable!!.toBitmap()
 
-            val checkedResized = Bitmap.createScaledBitmap(checkedBitmap, width.rawWidth(), height.rawHeight(), true)
-            val uncheckedResized = Bitmap.createScaledBitmap(uncheckedBitmap, width.rawWidth(), height.rawHeight(), true)
+            val checkedResized =
+                Bitmap.createScaledBitmap(checkedBitmap, width.rawWidth(), height.rawHeight(), true)
+            val uncheckedResized =
+                Bitmap.createScaledBitmap(
+                    uncheckedBitmap,
+                    width.rawWidth(),
+                    height.rawHeight(),
+                    true
+                )
 
-            val checkedResizedDrawable = BitmapDrawable(this.context.resources, checkedResized)
-            val uncheckedResizedDrawable = BitmapDrawable(this.context.resources, uncheckedResized)
+            val checkedResizedDrawable = BitmapDrawable(context.resources, checkedResized)
+            val uncheckedResizedDrawable = BitmapDrawable(context.resources, uncheckedResized)
 
             radioButton.buttonDrawable = uncheckedResizedDrawable
             radioButton.setOnCheckedChangeListener { buttonView, isChecked ->
-                buttonView.buttonDrawable = if(isChecked) {
+                buttonView.buttonDrawable = if (isChecked) {
                     checkedResizedDrawable
                 } else {
                     uncheckedResizedDrawable
@@ -375,27 +457,43 @@ class Tools {
                 override fun onClick(p0: View?) {
                     val button = p0 as RadioButton
 
-                    if(button.isChecked && m_previousCheck) {
+                    if (button.isChecked && m_previousCheck) {
                         button.isChecked = false
                         m_previousCheck = false
-                    } else if(button.isChecked) {
+                    } else if (button.isChecked) {
                         m_previousCheck = true
                     }
-                    when(type) {
-                        TypesForEditTexts.SKILLS -> Character.getInstance().skillsProficiencyBonuses[i] = button.isChecked
-                        TypesForEditTexts.SAVING_THROWS -> Character.getInstance().savingThrowProficiencyBonuses[i] = button.isChecked
-                        TypesForEditTexts.SUCCESSES -> Character.getInstance().successes[i] = button.isChecked
-                        TypesForEditTexts.FAILURES -> Character.getInstance().failures[i] = button.isChecked
+                    when (type) {
+                        TypesForEditTexts.SKILLS -> Character.getInstance().skillsProficiencyBonuses[i] =
+                            button.isChecked
+
+                        TypesForEditTexts.SAVING_THROWS -> Character.getInstance().savingThrowProficiencyBonuses[i] =
+                            button.isChecked
+
+                        TypesForEditTexts.SUCCESSES -> Character.getInstance().successes[i] =
+                            button.isChecked
+
+                        TypesForEditTexts.FAILURES -> Character.getInstance().failures[i] =
+                            button.isChecked
+
                         else -> {}
                     }
                 }
             })
 
-            when(type) {
-                TypesForEditTexts.SKILLS -> radioButton.isChecked = Character.getInstance().skillsProficiencyBonuses[i]
-                TypesForEditTexts.SAVING_THROWS -> radioButton.isChecked = Character.getInstance().savingThrowProficiencyBonuses[i]
-                TypesForEditTexts.SUCCESSES -> radioButton.isChecked = Character.getInstance().successes[i]
-                TypesForEditTexts.FAILURES -> radioButton.isChecked = Character.getInstance().failures[i]
+            when (type) {
+                TypesForEditTexts.SKILLS -> radioButton.isChecked =
+                    Character.getInstance().skillsProficiencyBonuses[i]
+
+                TypesForEditTexts.SAVING_THROWS -> radioButton.isChecked =
+                    Character.getInstance().savingThrowProficiencyBonuses[i]
+
+                TypesForEditTexts.SUCCESSES -> radioButton.isChecked =
+                    Character.getInstance().successes[i]
+
+                TypesForEditTexts.FAILURES -> radioButton.isChecked =
+                    Character.getInstance().failures[i]
+
                 else -> {}
             }
             return radioButton
@@ -410,13 +508,15 @@ class Tools {
             constraintSet.connect(
                 view.id, ConstraintSet.START,
                 drawableLayout.id, ConstraintSet.START,
-                position.first.rawWidth())
+                position.first.rawWidth()
+            )
 
             // Constraint in vertical
             constraintSet.connect(
                 view.id, ConstraintSet.TOP,
                 drawableLayout.id, ConstraintSet.TOP,
-                position.second.rawHeight())
+                position.second.rawHeight()
+            )
 
             constraintSet.applyTo(drawableLayout)
         }
@@ -457,6 +557,10 @@ class Tools {
 
         fun Double.rawHeight(): Int {
             return (this * drawableSize.height).toInt()
+        }
+
+        fun checkContext(context: Context?): Context {
+            return context ?: throw Exception("Context is null")
         }
     }
 }

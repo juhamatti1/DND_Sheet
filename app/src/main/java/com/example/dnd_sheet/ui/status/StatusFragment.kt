@@ -49,32 +49,34 @@ class StatusFragment : Fragment() {
 
                 Tools.setLayout(statsLayout)
 
-                Tools.drawableToLayout(R.drawable.stats)
+                val ctx = Tools.checkContext(context)
 
-                Tools.createMainStatsViews()
+                Tools.drawableToLayout(R.drawable.stats, ctx)
 
-                Tools.createInspirationAndProficiencyBonusViews()
+                Tools.createMainStatsViews(ctx)
 
-                Tools.createSavingThrows()
+                Tools.createInspirationAndProficiencyBonusViews(ctx)
 
-                Tools.createSkills()
+                Tools.createSavingThrows(ctx)
 
-                Tools.createPassiveWisdom()
+                Tools.createSkills(ctx)
 
-                Tools.createProficienciesAndLanguages()
+                Tools.createPassiveWisdom(ctx)
+
+                Tools.createProficienciesAndLanguages(ctx)
             }
         })
     }
 
     override fun onStop() {
         super.onStop()
-        Tools.saveToJson()
+        Tools.saveToJson(Tools.checkContext(context))
     }
 
     override fun onResume() {
         super.onResume()
         // Check if there is already local character file. Load it if yes
-        Tools.loadFromLocalJson()
+        Tools.loadFromLocalJson(Tools.checkContext(context))
     }
 
     override fun onDestroyView() {

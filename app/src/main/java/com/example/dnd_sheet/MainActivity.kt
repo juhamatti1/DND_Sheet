@@ -30,7 +30,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Tools.init(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -48,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         // Pressed callback for share button
         findViewById<Button>(R.id.shareButton).setOnClickListener {
 
-            val character = Tools.loadFromLocalJson() ?: return@setOnClickListener
+            val character = Tools.loadFromLocalJson(applicationContext) ?: return@setOnClickListener
             val characterString = Json.encodeToString(character)
 
             try {
