@@ -131,6 +131,7 @@ class Tools {
             editTextView.gravity = gravity
             editTextView.inputType = inputType
             editTextView.setTextColor(Color.BLACK)
+            editTextView.background = null
 
             when(type) {
                 TypesForEditTexts.SKILLS -> enumOrdinal?.let{ editTextView.setText(Character.getInstance().skills[enumOrdinal].toString()) }
@@ -153,7 +154,6 @@ class Tools {
                         )
                     }
                 }
-                else -> {}
             }
             return editTextView
         }
