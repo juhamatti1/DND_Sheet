@@ -1,4 +1,4 @@
-package com.example.dnd_sheet.ui.dashboard
+package com.example.dnd_sheet.ui.equipment
 
 import android.os.Bundle
 import android.text.InputType
@@ -14,13 +14,13 @@ import androidx.fragment.app.Fragment
 import com.example.dnd_sheet.Character
 import com.example.dnd_sheet.Character.TypesForEditTexts
 import com.example.dnd_sheet.R
-import com.example.dnd_sheet.databinding.FragmentDashboardBinding
+import com.example.dnd_sheet.databinding.FragmentEquipmentBinding
 import com.example.dnd_sheet.ui.Tools
 
-class DashboardFragment : Fragment() {
+class EquipmentFragment : Fragment() {
 
-    private var _binding: FragmentDashboardBinding? = null
-    private val TAG: String = "DashboardFragment"
+    private var _binding: FragmentEquipmentBinding? = null
+    private val TAG: String = "EquipmentFragment"
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -32,7 +32,7 @@ class DashboardFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentDashboardBinding.inflate(inflater, container, false)
+        _binding = FragmentEquipmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
