@@ -10,7 +10,8 @@ class Character private constructor() {
         // @Volatile, you ensure that:
         // - Reads and writes to the instance are not reordered by the compiler or processor.
         // - Changes made by one thread are visible to other threads immediately.
-        @Volatile private var instance: Character? = null
+        @Volatile
+        private var instance: Character? = null
 
 
         /**
@@ -50,11 +51,14 @@ class Character private constructor() {
     var temporaryHitpoint: Int = 0
     var hitDice: String = "0"
     var hitDiceTotal: Int = 0
-    val attacksSpellcasting = Array(3) { mutableMapOf(
-        Attacks_spellcasting.NAME.ordinal to "",
-        Attacks_spellcasting.ATK_BONUS.ordinal to "",
-        Attacks_spellcasting.DAMAGE_TYPE.ordinal to ""
-    ) }
+    val attacksSpellcasting = Array(3) {
+        mutableMapOf(
+            Attacks_spellcasting.NAME.ordinal to "",
+            Attacks_spellcasting.ATK_BONUS.ordinal to "",
+            Attacks_spellcasting.DAMAGE_TYPE.ordinal to ""
+        )
+    }
+    var attacksSpellcastingText: String = ""
     var failures = BooleanArray(3) { false }
     var successes = BooleanArray(3) { false }
     var skillsProficiencyBonuses = BooleanArray(Skills.entries.size) { false }
@@ -65,13 +69,14 @@ class Character private constructor() {
 //    lateinit var skills: HashMap<Skills, Boolean>
 
     enum class MainStats {
-        STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA, INSPIRATION, PROFICIENCY_BONUS, PASSIVE_WISDOM
+        STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA, INSPIRATION,
+        PROFICIENCY_BONUS, PASSIVE_WISDOM
     }
 
     enum class TypesForEditTexts {
-        MAINSTATS, SAVING_THROWS, SKILLS, ARMOR_CLASS, INITIATIVE, SPEED, HIT_POINT_MAXIMUM,
-        CURRENT_HIT_POINTS, TEMPORARY_HIT_POINTS, HIT_DICE, HIT_DICE_TOTAL, SUCCESSES, FAILURES,
-        ATTACKS_SPELLCASTING
+        MAINSTATS, SAVING_THROWS, SKILLS, ARMOR_CLASS, INITIATIVE, SPEED, PROFIENCIES_AND_LANGUAGES,
+        HIT_POINT_MAXIMUM, CURRENT_HIT_POINTS, TEMPORARY_HIT_POINTS, HIT_DICE, HIT_DICE_TOTAL,
+        SUCCESSES, FAILURES, ATTACKS_SPELLCASTING, ATTACKS_SPELLCASTING_TEXT
     }
 
     enum class SavingThrows {

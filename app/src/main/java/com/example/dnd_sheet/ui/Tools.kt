@@ -150,6 +150,7 @@ class Tools {
                 TypesForEditTexts.ARMOR_CLASS -> editTextView.setText(Character.getInstance().armorClass.toString())
                 TypesForEditTexts.INITIATIVE -> editTextView.setText(Character.getInstance().initiative.toString())
                 TypesForEditTexts.SPEED -> editTextView.setText(Character.getInstance().speed.toString())
+                TypesForEditTexts.PROFIENCIES_AND_LANGUAGES -> editTextView.setText(Character.getInstance().proficienciesAndLanguages)
                 TypesForEditTexts.HIT_POINT_MAXIMUM -> editTextView.setText(Character.getInstance().hitpointMaximum.toString())
                 TypesForEditTexts.CURRENT_HIT_POINTS -> editTextView.setText(Character.getInstance().currentHitpoint.toString())
                 TypesForEditTexts.TEMPORARY_HIT_POINTS -> editTextView.setText(Character.getInstance().temporaryHitpoint.toString())
@@ -164,6 +165,7 @@ class Tools {
                         )
                     }
                 }
+                TypesForEditTexts.ATTACKS_SPELLCASTING_TEXT -> editTextView.setText(Character.getInstance().attacksSpellcastingText)
             }
             return editTextView
         }
@@ -368,31 +370,24 @@ class Tools {
             setViewToLayout(passiveWisdomText, 0.082 to 0.71)
         }
 
-        fun createProficienciesAndLanguages(context: Context) {
+        fun createScrollableView(context: Context, editText: EditText, width: Double, height: Double): RelativeLayout {
             val layout = RelativeLayout(context)
             layout.id = View.generateViewId()
-            layout.layoutParams = ViewGroup.LayoutParams(0.85.rawWidth(), 0.205.rawHeight())
-            setViewToLayout(layout, 0.1 to 0.765)
+            layout.layoutParams = ViewGroup.LayoutParams(width.rawWidth(), height.rawHeight())
 
             val nestedScrollView = NestedScrollView(context)
             nestedScrollView.id = View.generateViewId()
             nestedScrollView.isFillViewport = true
             nestedScrollView.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            nestedScrollView.smoothScrollBy(0, 0)
 
             layout.addView(nestedScrollView)
 
-            val editText = EditText(context)
-            editText.id = View.generateViewId()
             editText.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-            editText.setTextColor(Color.BLACK)
-            editText.textSize = 15f
-            editText.gravity = Gravity.START or Gravity.TOP
-            editText.setText(Character.getInstance().proficienciesAndLanguages)
-            editText.addTextChangedListener(afterTextChanged = { editedText: Editable? ->
-                Character.getInstance().proficienciesAndLanguages = editedText.toString()
-            })
 
             nestedScrollView.addView(editText)
+
+            return layout
         }
 
         // ToDo: RadioButton icon is not same size for different display resolutions and dpi. Make something to match those

@@ -6,6 +6,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewTreeObserver
 import android.widget.EditText
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -25,7 +26,7 @@ class EquipmentFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-    lateinit var  equipmentLayout : ConstraintLayout
+    lateinit var equipmentLayout: ConstraintLayout
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -55,7 +56,13 @@ class EquipmentFragment : Fragment() {
                 Tools.drawableToLayout(R.drawable.equipment, ctx)
 
                 val armorView =
-                    Tools.createEditText(0.2, 0.05, TypesForEditTexts.ARMOR_CLASS, textSize = 28f, context = ctx)
+                    Tools.createEditText(
+                        0.2,
+                        0.05,
+                        TypesForEditTexts.ARMOR_CLASS,
+                        textSize = 28f,
+                        context = ctx
+                    )
                 Tools.setViewToLayout(armorView, 0.1 to 0.026)
                 armorView.setOnFocusChangeListener { view, hasFocus ->
                     if (!hasFocus) {
@@ -65,7 +72,13 @@ class EquipmentFragment : Fragment() {
                 }
 
                 val initiativeView =
-                    Tools.createEditText(0.25, 0.06, TypesForEditTexts.INITIATIVE, textSize = 28f, context = ctx)
+                    Tools.createEditText(
+                        0.25,
+                        0.06,
+                        TypesForEditTexts.INITIATIVE,
+                        textSize = 28f,
+                        context = ctx
+                    )
                 Tools.setViewToLayout(initiativeView, 0.372 to 0.02)
                 initiativeView.setOnFocusChangeListener { view, hasFocus ->
                     if (!hasFocus) {
@@ -75,7 +88,13 @@ class EquipmentFragment : Fragment() {
                 }
 
                 val speedView =
-                    Tools.createEditText(0.25, 0.06, TypesForEditTexts.SPEED, textSize = 28f, context = ctx)
+                    Tools.createEditText(
+                        0.25,
+                        0.06,
+                        TypesForEditTexts.SPEED,
+                        textSize = 28f,
+                        context = ctx
+                    )
                 Tools.setViewToLayout(speedView, 0.685 to 0.02)
                 speedView.setOnFocusChangeListener { view, hasFocus ->
                     if (!hasFocus) {
@@ -85,7 +104,12 @@ class EquipmentFragment : Fragment() {
                 }
 
                 val hitPointsMaxView =
-                    Tools.createEditText(0.5, 0.03, TypesForEditTexts.HIT_POINT_MAXIMUM, context = ctx)
+                    Tools.createEditText(
+                        0.5,
+                        0.03,
+                        TypesForEditTexts.HIT_POINT_MAXIMUM,
+                        context = ctx
+                    )
                 hitPointsMaxView.gravity = Gravity.BOTTOM
                 Tools.setViewToLayout(hitPointsMaxView, 0.44 to 0.112)
                 hitPointsMaxView.setOnFocusChangeListener { view, hasFocus ->
@@ -124,7 +148,12 @@ class EquipmentFragment : Fragment() {
                 }
 
                 val totalHitDiceView =
-                    Tools.createEditText(0.26, 0.03, TypesForEditTexts.HIT_DICE_TOTAL, context = ctx)
+                    Tools.createEditText(
+                        0.26,
+                        0.03,
+                        TypesForEditTexts.HIT_DICE_TOTAL,
+                        context = ctx
+                    )
                 totalHitDiceView.gravity = Gravity.BOTTOM
                 Tools.setViewToLayout(totalHitDiceView, 0.2 to 0.298)
                 totalHitDiceView.setOnFocusChangeListener { view, hasFocus ->
@@ -151,7 +180,13 @@ class EquipmentFragment : Fragment() {
                 Character.getInstance().successes.forEachIndexed { index, _ ->
                     run {
                         val successesRadioButton =
-                            Tools.createRadioButton(index, TypesForEditTexts.SUCCESSES, 0.06, 0.015, context = ctx)
+                            Tools.createRadioButton(
+                                index,
+                                TypesForEditTexts.SUCCESSES,
+                                0.06,
+                                0.015,
+                                context = ctx
+                            )
                         Tools.setViewToLayout(successesRadioButton, 0.72 + index * 0.069 to 0.304)
                     }
                 }
@@ -159,13 +194,18 @@ class EquipmentFragment : Fragment() {
                 Character.getInstance().failures.forEachIndexed { index, _ ->
                     run {
                         val failuresRadioButton =
-                            Tools.createRadioButton(index, TypesForEditTexts.FAILURES, 0.06, 0.015, context = ctx)
+                            Tools.createRadioButton(
+                                index,
+                                TypesForEditTexts.FAILURES,
+                                0.06,
+                                0.015,
+                                context = ctx
+                            )
                         Tools.setViewToLayout(failuresRadioButton, 0.72 + index * 0.069 to 0.327)
                     }
                 }
 
-
-                for(row in 0..2) {
+                for (row in 0..2) {
                     val name = Character.Attacks_spellcasting.NAME.ordinal
                     val atk_bonus = Character.Attacks_spellcasting.ATK_BONUS.ordinal
                     val damage_type = Character.Attacks_spellcasting.DAMAGE_TYPE.ordinal
@@ -184,7 +224,8 @@ class EquipmentFragment : Fragment() {
                     nameView.setPadding(0)
                     nameView.setOnFocusChangeListener { view, hasFocus ->
                         if (!hasFocus) {
-                            Character.getInstance().attacksSpellcasting[row][name] = (view as EditText).text.toString()
+                            Character.getInstance().attacksSpellcasting[row][name] =
+                                (view as EditText).text.toString()
                         }
                     }
 
@@ -202,7 +243,8 @@ class EquipmentFragment : Fragment() {
                     atkBonusView.setPadding(0)
                     atkBonusView.setOnFocusChangeListener { view, hasFocus ->
                         if (!hasFocus) {
-                            Character.getInstance().attacksSpellcasting[row][atk_bonus] = (view as EditText).text.toString()
+                            Character.getInstance().attacksSpellcasting[row][atk_bonus] =
+                                (view as EditText).text.toString()
                         }
                     }
 
@@ -220,11 +262,29 @@ class EquipmentFragment : Fragment() {
                     damageTypeView.setPadding(0)
                     damageTypeView.setOnFocusChangeListener { view, hasFocus ->
                         if (!hasFocus) {
-                            Character.getInstance().attacksSpellcasting[row][damage_type] = (view as EditText).text.toString()
+                            Character.getInstance().attacksSpellcasting[row][damage_type] =
+                                (view as EditText).text.toString()
                         }
                     }
                 }
 
+                val attacksSpellcastingText = Tools.createEditText(
+                    0.0,
+                    0.0,
+                    TypesForEditTexts.ATTACKS_SPELLCASTING_TEXT,
+                    gravity = Gravity.START or Gravity.TOP,
+                    inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
+                    context = ctx
+                )
+                attacksSpellcastingText.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT,
+                    MATCH_PARENT)
+                attacksSpellcastingText.setOnFocusChangeListener { view, hasFocus ->
+                    if (!hasFocus) {
+                        Character.getInstance().attacksSpellcastingText = (view as EditText).text.toString()
+                    }
+                }
+                val scrollableView = Tools.createScrollableView(ctx, attacksSpellcastingText, 0.9, 0.17)
+                Tools.setViewToLayout(scrollableView, 0.06 to 0.52)
             }
         })
     }
