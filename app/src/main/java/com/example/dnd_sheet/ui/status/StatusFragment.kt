@@ -11,7 +11,7 @@ import android.widget.EditText
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import com.example.dnd_sheet.Character
-import com.example.dnd_sheet.Character.TypesForEditTexts
+import com.example.dnd_sheet.Character.EditTextsId
 import com.example.dnd_sheet.R
 import com.example.dnd_sheet.databinding.FragmentStatusBinding
 import com.example.dnd_sheet.ui.Tools
@@ -72,7 +72,7 @@ class StatusFragment : Fragment() {
                 val proficienciesEditText = Tools.createEditText(
                     0.0,
                     0.0,
-                    TypesForEditTexts.PROFIENCIES_AND_LANGUAGES,
+                    EditTextsId.PROFIENCIES_AND_LANGUAGES,
                     textSize = 15f,
                     inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
                     gravity = Gravity.START or Gravity.TOP,

@@ -64,19 +64,23 @@ class Character private constructor() {
     var skillsProficiencyBonuses = BooleanArray(Skills.entries.size) { false }
     var savingThrowProficiencyBonuses = BooleanArray(SavingThrows.entries.size) { false }
     var proficienciesAndLanguages = ""
-
-//    lateinit var saving_throws: HashMap<Saving_throws, Int>
-//    lateinit var skills: HashMap<Skills, Boolean>
+    var cp: Int = 0
+    var sp: Int = 0
+    var ep: Int = 0
+    var gp: Int = 0
+    var pp: Int = 0
+    var equipmentText: String = ""
 
     enum class MainStats {
         STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA, INSPIRATION,
         PROFICIENCY_BONUS, PASSIVE_WISDOM
     }
 
-    enum class TypesForEditTexts {
+    enum class EditTextsId {
         MAINSTATS, SAVING_THROWS, SKILLS, ARMOR_CLASS, INITIATIVE, SPEED, PROFIENCIES_AND_LANGUAGES,
         HIT_POINT_MAXIMUM, CURRENT_HIT_POINTS, TEMPORARY_HIT_POINTS, HIT_DICE, HIT_DICE_TOTAL,
-        SUCCESSES, FAILURES, ATTACKS_SPELLCASTING, ATTACKS_SPELLCASTING_TEXT
+        SUCCESSES, FAILURES, ATTACKS_SPELLCASTING, ATTACKS_SPELLCASTING_TEXT, CP, SP, EP, GP, PP,
+        EQUPIMENT_TEXT
     }
 
     enum class SavingThrows {
@@ -91,10 +95,6 @@ class Character private constructor() {
 
     enum class Attacks_spellcasting {
         NAME, ATK_BONUS, DAMAGE_TYPE
-    }
-
-    enum class EQUIPMENT {
-        CP, SP, EP, GP, PP
     }
 
 //    enum class DND_classes {

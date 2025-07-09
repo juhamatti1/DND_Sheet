@@ -32,7 +32,7 @@ import com.example.dnd_sheet.Character
 import com.example.dnd_sheet.Character.MainStats
 import com.example.dnd_sheet.Character.SavingThrows
 import com.example.dnd_sheet.Character.Skills
-import com.example.dnd_sheet.Character.TypesForEditTexts
+import com.example.dnd_sheet.Character.EditTextsId
 import com.example.dnd_sheet.R
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -123,7 +123,7 @@ class Tools {
         fun createEditText(
             width: Double,
             height: Double,
-            type: TypesForEditTexts,
+            type: EditTextsId,
             enumOrdinal: Int? = null,
             textSize: Float = 14f,
             gravity: Int = Gravity.CENTER,
@@ -142,30 +142,37 @@ class Tools {
             editTextView.inputType = inputType
             editTextView.setTextColor(Color.BLACK)
             editTextView.background = null
+            editTextView.setPadding(0, 0, 0, 0)
 
             when (type) {
-                TypesForEditTexts.SKILLS -> enumOrdinal?.let { editTextView.setText(Character.getInstance().skills[enumOrdinal].toString()) }
-                TypesForEditTexts.MAINSTATS -> enumOrdinal?.let { editTextView.setText(Character.getInstance().mainStats[enumOrdinal].toString()) }
-                TypesForEditTexts.SAVING_THROWS -> enumOrdinal?.let { editTextView.setText(Character.getInstance().savingThrows[enumOrdinal].toString()) }
-                TypesForEditTexts.ARMOR_CLASS -> editTextView.setText(Character.getInstance().armorClass.toString())
-                TypesForEditTexts.INITIATIVE -> editTextView.setText(Character.getInstance().initiative.toString())
-                TypesForEditTexts.SPEED -> editTextView.setText(Character.getInstance().speed.toString())
-                TypesForEditTexts.PROFIENCIES_AND_LANGUAGES -> editTextView.setText(Character.getInstance().proficienciesAndLanguages)
-                TypesForEditTexts.HIT_POINT_MAXIMUM -> editTextView.setText(Character.getInstance().hitpointMaximum.toString())
-                TypesForEditTexts.CURRENT_HIT_POINTS -> editTextView.setText(Character.getInstance().currentHitpoint.toString())
-                TypesForEditTexts.TEMPORARY_HIT_POINTS -> editTextView.setText(Character.getInstance().temporaryHitpoint.toString())
-                TypesForEditTexts.HIT_DICE -> editTextView.setText(Character.getInstance().hitDice)
-                TypesForEditTexts.HIT_DICE_TOTAL -> editTextView.setText(Character.getInstance().hitDiceTotal.toString())
-                TypesForEditTexts.SUCCESSES -> editTextView.setText(Character.getInstance().successes.toString())
-                TypesForEditTexts.FAILURES -> editTextView.setText(Character.getInstance().failures.toString())
-                TypesForEditTexts.ATTACKS_SPELLCASTING -> {
+                EditTextsId.SKILLS -> enumOrdinal?.let { editTextView.setText(Character.getInstance().skills[enumOrdinal].toString()) }
+                EditTextsId.MAINSTATS -> enumOrdinal?.let { editTextView.setText(Character.getInstance().mainStats[enumOrdinal].toString()) }
+                EditTextsId.SAVING_THROWS -> enumOrdinal?.let { editTextView.setText(Character.getInstance().savingThrows[enumOrdinal].toString()) }
+                EditTextsId.ARMOR_CLASS -> editTextView.setText(Character.getInstance().armorClass.toString())
+                EditTextsId.INITIATIVE -> editTextView.setText(Character.getInstance().initiative.toString())
+                EditTextsId.SPEED -> editTextView.setText(Character.getInstance().speed.toString())
+                EditTextsId.PROFIENCIES_AND_LANGUAGES -> editTextView.setText(Character.getInstance().proficienciesAndLanguages)
+                EditTextsId.HIT_POINT_MAXIMUM -> editTextView.setText(Character.getInstance().hitpointMaximum.toString())
+                EditTextsId.CURRENT_HIT_POINTS -> editTextView.setText(Character.getInstance().currentHitpoint.toString())
+                EditTextsId.TEMPORARY_HIT_POINTS -> editTextView.setText(Character.getInstance().temporaryHitpoint.toString())
+                EditTextsId.HIT_DICE -> editTextView.setText(Character.getInstance().hitDice)
+                EditTextsId.HIT_DICE_TOTAL -> editTextView.setText(Character.getInstance().hitDiceTotal.toString())
+                EditTextsId.SUCCESSES -> editTextView.setText(Character.getInstance().successes.toString())
+                EditTextsId.FAILURES -> editTextView.setText(Character.getInstance().failures.toString())
+                EditTextsId.ATTACKS_SPELLCASTING -> {
                     if (index != null) {
                         editTextView.setText(
                             Character.getInstance().attacksSpellcasting[index][enumOrdinal] ?: ""
                         )
                     }
                 }
-                TypesForEditTexts.ATTACKS_SPELLCASTING_TEXT -> editTextView.setText(Character.getInstance().attacksSpellcastingText)
+                EditTextsId.ATTACKS_SPELLCASTING_TEXT -> editTextView.setText(Character.getInstance().attacksSpellcastingText)
+                EditTextsId.CP -> editTextView.setText(Character.getInstance().cp.toString())
+                EditTextsId.SP -> editTextView.setText(Character.getInstance().sp.toString())
+                EditTextsId.EP -> editTextView.setText(Character.getInstance().ep.toString())
+                EditTextsId.GP -> editTextView.setText(Character.getInstance().gp.toString())
+                EditTextsId.PP -> editTextView.setText(Character.getInstance().pp.toString())
+                EditTextsId.EQUPIMENT_TEXT -> editTextView.setText(Character.getInstance().equipmentText)
             }
             return editTextView
         }
@@ -173,7 +180,7 @@ class Tools {
         fun createMainStatsViews(context: Context) {
             for (i in 0..5) {
                 // Creating edit texts for main stats
-                val mainStatEditText = createEditText(0.14, 0.03, TypesForEditTexts.MAINSTATS, i, context = context)
+                val mainStatEditText = createEditText(0.14, 0.03, EditTextsId.MAINSTATS, i, context = context)
 
                 // Creating text views for bonus stats
                 val bonusView = TextView(context)
@@ -234,7 +241,7 @@ class Tools {
                 createEditText(
                     0.14,
                     0.034,
-                    TypesForEditTexts.MAINSTATS,
+                    EditTextsId.MAINSTATS,
                     MainStats.INSPIRATION.ordinal,
                     context = context
                 )
@@ -250,7 +257,7 @@ class Tools {
             val proficiencyText = createEditText(
                 0.145,
                 0.034,
-                TypesForEditTexts.MAINSTATS,
+                EditTextsId.MAINSTATS,
                 MainStats.PROFICIENCY_BONUS.ordinal,
                 context = context
             )
@@ -281,7 +288,7 @@ class Tools {
             // Creating edit texts for saving throws
             for (savingThrow in SavingThrows.entries) {
                 val proficiencyButton =
-                    createRadioButton(savingThrow.ordinal, TypesForEditTexts.SAVING_THROWS, context = context)
+                    createRadioButton(savingThrow.ordinal, EditTextsId.SAVING_THROWS, context = context)
 
                 setViewToLayout(
                     proficiencyButton,
@@ -291,7 +298,7 @@ class Tools {
                 val savingThrowView = createEditText(
                     0.08,
                     0.026,
-                    TypesForEditTexts.SAVING_THROWS,
+                    EditTextsId.SAVING_THROWS,
                     savingThrow.ordinal,
                     10f,
                     context = context
@@ -325,14 +332,14 @@ class Tools {
 
             // Creating edit texts for skills
             for (skills in Skills.entries) {
-                val proficiencyButton = createRadioButton(skills.ordinal, TypesForEditTexts.SKILLS, context = context)
+                val proficiencyButton = createRadioButton(skills.ordinal, EditTextsId.SKILLS, context = context)
                 setViewToLayout(
                     proficiencyButton,
                     0.445 to 0.305 + skills.ordinal.toDouble() * 0.0206
                 )
 
                 val skillsView =
-                    createEditText(0.07, 0.026, TypesForEditTexts.SKILLS, skills.ordinal, 10f, context = context)
+                    createEditText(0.07, 0.026, EditTextsId.SKILLS, skills.ordinal, 10f, context = context)
                 skillsView.addTextChangedListener(SkillsUpdater(skillsView, skills))
                 setViewToLayout(skillsView, 0.5 to 0.3 + skills.ordinal.toDouble() * 0.02065)
             }
@@ -357,7 +364,7 @@ class Tools {
             val passiveWisdomText = createEditText(
                 0.145,
                 0.04,
-                TypesForEditTexts.MAINSTATS,
+                EditTextsId.MAINSTATS,
                 MainStats.PASSIVE_WISDOM.ordinal,
                 context = context
             )
@@ -393,7 +400,7 @@ class Tools {
         // ToDo: RadioButton icon is not same size for different display resolutions and dpi. Make something to match those
         fun createRadioButton(
             i: Int,
-            type: TypesForEditTexts,
+            type: EditTextsId,
             width: Double = 0.038,
             height: Double = 0.012,
             context: Context
@@ -459,16 +466,16 @@ class Tools {
                         m_previousCheck = true
                     }
                     when (type) {
-                        TypesForEditTexts.SKILLS -> Character.getInstance().skillsProficiencyBonuses[i] =
+                        EditTextsId.SKILLS -> Character.getInstance().skillsProficiencyBonuses[i] =
                             button.isChecked
 
-                        TypesForEditTexts.SAVING_THROWS -> Character.getInstance().savingThrowProficiencyBonuses[i] =
+                        EditTextsId.SAVING_THROWS -> Character.getInstance().savingThrowProficiencyBonuses[i] =
                             button.isChecked
 
-                        TypesForEditTexts.SUCCESSES -> Character.getInstance().successes[i] =
+                        EditTextsId.SUCCESSES -> Character.getInstance().successes[i] =
                             button.isChecked
 
-                        TypesForEditTexts.FAILURES -> Character.getInstance().failures[i] =
+                        EditTextsId.FAILURES -> Character.getInstance().failures[i] =
                             button.isChecked
 
                         else -> {}
@@ -477,16 +484,16 @@ class Tools {
             })
 
             when (type) {
-                TypesForEditTexts.SKILLS -> radioButton.isChecked =
+                EditTextsId.SKILLS -> radioButton.isChecked =
                     Character.getInstance().skillsProficiencyBonuses[i]
 
-                TypesForEditTexts.SAVING_THROWS -> radioButton.isChecked =
+                EditTextsId.SAVING_THROWS -> radioButton.isChecked =
                     Character.getInstance().savingThrowProficiencyBonuses[i]
 
-                TypesForEditTexts.SUCCESSES -> radioButton.isChecked =
+                EditTextsId.SUCCESSES -> radioButton.isChecked =
                     Character.getInstance().successes[i]
 
-                TypesForEditTexts.FAILURES -> radioButton.isChecked =
+                EditTextsId.FAILURES -> radioButton.isChecked =
                     Character.getInstance().failures[i]
 
                 else -> {}
