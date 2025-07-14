@@ -1,13 +1,18 @@
 package com.example.dnd_sheet
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Bundle
 import android.provider.DocumentsContract
+import android.view.LayoutInflater
 import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
+import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -102,6 +107,26 @@ class MainActivity : AppCompatActivity() {
 
         val navView: BottomNavigationView = binding.navView
         navView.setupWithNavController(navController)
+
+        val menuButton = findViewById<Button>(R.id.menu_button)
+        menuButton.setOnClickListener { anchor ->
+            showPopupMenu(anchor)
+        }
+    }
+
+    private fun showPopupMenu(anchor: View) {
+        val context = anchor.context
+        val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val popupView = inflater.inflate(R.layout.menu_buttons, null)
+
+        val popupWindow = PopupWindow(
+            popupView,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        )
+
+        popupWindow.showAsDropDown(anchor)
     }
 
     private lateinit var openFileActivityLauncher: ActivityResultLauncher<Intent>
