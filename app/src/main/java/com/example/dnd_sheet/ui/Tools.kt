@@ -51,7 +51,7 @@ class Tools {
         // Layout of the drawable
         private lateinit var drawableLayout: ConstraintLayout
 
-        fun saveToJson(context: Context): File {
+        fun saveToFile(context: Context): File {
             val jsonString = Json.encodeToString(Character.getInstance())
             val filesDir = File(context.filesDir, "")
 

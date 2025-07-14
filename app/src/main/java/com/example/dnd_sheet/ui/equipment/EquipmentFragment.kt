@@ -396,7 +396,7 @@ class EquipmentFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        Tools.saveToJson(Tools.checkContext(context))
+        Tools.saveToFile(Tools.checkContext(context))
     }
 
     override fun onResume() {

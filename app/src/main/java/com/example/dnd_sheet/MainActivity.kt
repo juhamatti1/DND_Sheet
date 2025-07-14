@@ -1,10 +1,13 @@
 package com.example.dnd_sheet
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
+import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -26,6 +29,9 @@ import com.example.dnd_sheet.ui.Tools
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
 
 
 class MainActivity : AppCompatActivity() {
@@ -45,12 +51,54 @@ class MainActivity : AppCompatActivity() {
         ) {
             result ->
 
-            val jsonIntent: Intent? = result.data
-            val jsonString = jsonIntent?.getStringExtra("result_key") ?: ""
+            if (result.resultCode != Activity.RESULT_OK) {
+                return@registerForActivityResult
+            }
+
+            val fileUri: Uri = result.data?.data ?: return@registerForActivityResult
+            val jsonString = readTextFromUri(fileUri)
+            if(jsonString.isEmpty()) {
+                return@registerForActivityResult
+            }
+            try {
+                var character = Json.decodeFromString<Character>(jsonString)
+                // Save loaded character to singleton instance
+                Character.getInstance(character)
+                Tools.saveToFile(applicationContext)
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this, "Error parsing file: ${e.message}", Toast.LENGTH_LONG).show()
+            }
         }
 
-        // Pressed callback for share button
-        findViewById<Button>(R.id.shareButton).setOnClickListener {
+        val navController = findNavController(R.id.nav_host_fragment_activity_main)
+        // Passing each menu ID as a set of Ids because each
+        // menu should be considered as top level destinations.
+        val appBarConfiguration = AppBarConfiguration(
+            setOf(
+                R.id.navigation_status, R.id.navigation_equipment, R.id.navigation_notifications
+            )
+        )
+        setupActionBarWithNavController(navController, appBarConfiguration)
+
+        val navView: BottomNavigationView = binding.navView
+        navView.setupWithNavController(navController)
+
+        val menuButton = findViewById<Button>(R.id.menu_button)
+        menuButton.setOnClickListener { anchor ->
+            showPopupMenu(anchor)
+        }
+    }
+
+    private fun showPopupMenu(anchor: View) {
+        val context = anchor.context
+        val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val popupView = inflater.inflate(R.layout.menu_buttons, null)
+
+
+        popupView.findViewById<Button>(R.id.saveButton).setOnClickListener {
+            Log.i(TAG, "save button pressed")
 
             val character = Tools.loadFromLocalJson(applicationContext) ?: return@setOnClickListener
             val characterString = Json.encodeToString(character)
@@ -80,7 +128,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.openButton).setOnClickListener {
+        popupView.findViewById<Button>(R.id.loadButton).setOnClickListener {
             val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
                 type = "text/plain"
@@ -92,31 +140,6 @@ class MainActivity : AppCompatActivity() {
 
             openFileActivityLauncher.launch(intent)
         }
-
-
-        val navController = findNavController(R.id.nav_host_fragment_activity_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        val appBarConfiguration = AppBarConfiguration(
-            setOf(
-                R.id.navigation_status, R.id.navigation_equipment, R.id.navigation_notifications
-            )
-        )
-        setupActionBarWithNavController(navController, appBarConfiguration)
-
-        val navView: BottomNavigationView = binding.navView
-        navView.setupWithNavController(navController)
-
-        val menuButton = findViewById<Button>(R.id.menu_button)
-        menuButton.setOnClickListener { anchor ->
-            showPopupMenu(anchor)
-        }
-    }
-
-    private fun showPopupMenu(anchor: View) {
-        val context = anchor.context
-        val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val popupView = inflater.inflate(R.layout.menu_buttons, null)
 
         val popupWindow = PopupWindow(
             popupView,
@@ -145,5 +168,26 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.dispatchTouchEvent(event)
+    }
+
+    // Helper function to read text from a Uri
+    private fun readTextFromUri(uri: Uri): String {
+        val stringBuilder = StringBuilder()
+        try {
+            contentResolver.openInputStream(uri)?.use { inputStream ->
+                BufferedReader(InputStreamReader(inputStream)).use { reader ->
+                    var line: String?
+                    while (reader.readLine().also { line = it } != null) {
+                        stringBuilder.append(line)
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Log.e(TAG, "Error reading text from Uri", e)
+            Toast.makeText(this, "Error reading file: ${e.message}", Toast.LENGTH_LONG).show()
+
+        }
+        return stringBuilder.toString()
     }
 }
