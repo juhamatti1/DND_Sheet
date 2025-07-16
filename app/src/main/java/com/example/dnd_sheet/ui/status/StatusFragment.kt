@@ -110,8 +110,8 @@ class StatusFragment : Fragment() {
             ctx,
             proficienciesEditText,
             0.85,
-            0.205
+            0.195
         )
-        Tools.setViewToLayout(scrollableView, 0.1 to 0.765)
+        Tools.setViewToLayout(scrollableView, 0.11 to 0.769)
     }
 }
