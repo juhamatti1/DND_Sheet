@@ -51,8 +51,8 @@ class Tools {
         // Layout of the drawable
         private lateinit var drawableLayout: ConstraintLayout
 
-        fun saveToFile(context: Context): File {
-            val jsonString = Json.encodeToString(Character.getInstance())
+        fun saveCharacterToFile(context: Context): File {
+            val jsonString = Json.encodeToString<Character>(Character.getInstance())
             val filesDir = File(context.filesDir, "")
 
             val file = File(filesDir, fileName)
@@ -64,7 +64,7 @@ class Tools {
          * Loads character from JSON file
          * /param Character.getInstance() - view model of character where json will be loaded
          */
-        fun loadFromLocalJson(context: Context): Character? {
+        fun loadCharacterFromFile(context: Context): Character? {
             val filesDir = File(context.filesDir, "")
             filesDir.mkdirs()
             val file = File(filesDir, fileName)

@@ -20,7 +20,6 @@ class StatusFragment : Fragment() {
 
     // ? makes possible that variable can be declared as null
     private var _binding: FragmentStatusBinding? = null
-    private val TAG: String = "HomeFragment"
     lateinit var statsLayout: ConstraintLayout
 
 
@@ -39,74 +38,77 @@ class StatusFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentStatusBinding.inflate(inflater, container, false)
-        return binding.root
-    }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        statsLayout = binding.root.findViewById(R.id.stats_layout)
 
-        statsLayout = view.findViewById(R.id.stats_layout)
+        // Check if there is already local character file. Load it if yes
+        Tools.loadCharacterFromFile(Tools.checkContext(context))
 
-        statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object :
-            ViewTreeObserver.OnGlobalLayoutListener {
-            override fun onGlobalLayout() {
-                //Remove the listener before proceeding
-                statsLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
+        if (statsLayout.width > 0) {
+            // Layout already have dimensions so OnGlobalLayoutListener won't be called
+            drawLayout()
+        } else {
+            statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object :
+                ViewTreeObserver.OnGlobalLayoutListener {
+                override fun onGlobalLayout() {
+                    //Remove the listener before proceeding. This callback is for the initial only
+                    statsLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
 
-                Tools.setLayout(statsLayout)
-
-                val ctx = Tools.checkContext(context)
-
-                Tools.drawableToLayout(R.drawable.stats, ctx)
-
-                Tools.createMainStatsViews(ctx)
-
-                Tools.createInspirationAndProficiencyBonusViews(ctx)
-
-                Tools.createSavingThrows(ctx)
-
-                Tools.createSkills(ctx)
-
-                Tools.createPassiveWisdom(ctx)
-
-                val proficienciesEditText = Tools.createEditText(
-                    0.0,
-                    0.0,
-                    EditTextsId.PROFIENCIES_AND_LANGUAGES,
-                    textSize = 15f,
-                    inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
-                    gravity = Gravity.START or Gravity.TOP,
-                    context = ctx
-                )
-                proficienciesEditText.setOnFocusChangeListener { view, hasFocus ->
-                    if (!hasFocus) {
-                        Character.getInstance().proficienciesAndLanguages = (view as EditText).text.toString()
-                    }
+                    drawLayout()
                 }
-                val scrollableView = Tools.createScrollableView(
-                    ctx,
-                    proficienciesEditText,
-                    0.85,
-                    0.205
-                )
-                Tools.setViewToLayout(scrollableView, 0.1 to 0.765)
-            }
-        })
+            })
+        }
+
+        return binding.root
     }
 
     override fun onStop() {
         super.onStop()
-        Tools.saveToFile(Tools.checkContext(context))
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // Check if there is already local character file. Load it if yes
-        Tools.loadFromLocalJson(Tools.checkContext(context))
+        Tools.saveCharacterToFile(Tools.checkContext(context))
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    fun drawLayout() {
+        Tools.setLayout(statsLayout)
+
+        val ctx = Tools.checkContext(context)
+
+        Tools.drawableToLayout(R.drawable.stats, ctx)
+
+        Tools.createMainStatsViews(ctx)
+
+        Tools.createInspirationAndProficiencyBonusViews(ctx)
+
+        Tools.createSavingThrows(ctx)
+
+        Tools.createSkills(ctx)
+
+        Tools.createPassiveWisdom(ctx)
+
+        val proficienciesEditText = Tools.createEditText(
+            0.0,
+            0.0,
+            EditTextsId.PROFIENCIES_AND_LANGUAGES,
+            textSize = 15f,
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
+            gravity = Gravity.START or Gravity.TOP,
+            context = ctx
+        )
+        proficienciesEditText.setOnFocusChangeListener { view, hasFocus ->
+            if (!hasFocus) {
+                Character.getInstance().proficienciesAndLanguages = (view as EditText).text.toString()
+            }
+        }
+        val scrollableView = Tools.createScrollableView(
+            ctx,
+            proficienciesEditText,
+            0.85,
+            0.205
+        )
+        Tools.setViewToLayout(scrollableView, 0.1 to 0.765)
     }
 }

@@ -21,6 +21,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
@@ -46,31 +47,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         supportActionBar?.hide()
 
-        openFileActivityLauncher = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()
-        ) {
-            result ->
-
-            if (result.resultCode != Activity.RESULT_OK) {
-                return@registerForActivityResult
-            }
-
-            val fileUri: Uri = result.data?.data ?: return@registerForActivityResult
-            val jsonString = readTextFromUri(fileUri)
-            if(jsonString.isEmpty()) {
-                return@registerForActivityResult
-            }
-            try {
-                var character = Json.decodeFromString<Character>(jsonString)
-                // Save loaded character to singleton instance
-                Character.getInstance(character)
-                Tools.saveToFile(applicationContext)
-
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(this, "Error parsing file: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        }
 
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         // Passing each menu ID as a set of Ids because each
@@ -89,18 +65,61 @@ class MainActivity : AppCompatActivity() {
         menuButton.setOnClickListener { anchor ->
             showPopupMenu(anchor)
         }
+
+        openFileActivityLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+
+            if (result.resultCode != Activity.RESULT_OK) {
+                return@registerForActivityResult
+            }
+
+            val fileUri: Uri = result.data?.data ?: return@registerForActivityResult
+            val jsonString = readTextFromUri(fileUri)
+            if (jsonString.isEmpty()) {
+                return@registerForActivityResult
+            }
+            try {
+                val character = Json.decodeFromString<Character>(jsonString)
+                // Save loaded character to singleton instance
+                Character.getInstance(character)
+                Tools.saveCharacterToFile(applicationContext)
+
+                val navHostFragment =
+                    supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+                        ?: return@registerForActivityResult
+                val currentFragment =
+                    navHostFragment.childFragmentManager.primaryNavigationFragment
+                        ?: return@registerForActivityResult
+
+                // Reloading views for current fragment so updated Character data is shown
+                var ft = navHostFragment.childFragmentManager.beginTransaction()
+                ft.setReorderingAllowed(true)
+                ft.detach(currentFragment).commit()
+                ft = navHostFragment.childFragmentManager.beginTransaction()
+                ft.attach(currentFragment)
+                ft.commit()
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(this, "Error parsing file: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun showPopupMenu(anchor: View) {
         val context = anchor.context
         val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val popupView = inflater.inflate(R.layout.menu_buttons, null)
 
+        val parentForInflation = anchor.rootView as ViewGroup
+
+        val popupView = inflater.inflate(R.layout.menu_buttons, parentForInflation, false)
 
         popupView.findViewById<Button>(R.id.saveButton).setOnClickListener {
             Log.i(TAG, "save button pressed")
 
-            val character = Tools.loadFromLocalJson(applicationContext) ?: return@setOnClickListener
+            val character =
+                Tools.loadCharacterFromFile(applicationContext) ?: return@setOnClickListener
             val characterString = Json.encodeToString(character)
 
             try {
@@ -111,12 +130,14 @@ class MainActivity : AppCompatActivity() {
                     type = "text/plain"
                 }
 
-                val chooserIntent = Intent.createChooser(sendIntent, "Share Character sheet as json")
+                val chooserIntent =
+                    Intent.createChooser(sendIntent, "Share Character sheet as json")
 
-                if(sendIntent.resolveActivity(packageManager) != null) {
+                if (sendIntent.resolveActivity(packageManager) != null) {
                     startActivity(chooserIntent)
                 } else {
-                    Toast.makeText(this, "No app found to handle sharing", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "No app found to handle sharing", Toast.LENGTH_SHORT)
+                        .show()
                 }
             } catch (e: IllegalArgumentException) {
                 // This can happen if FileProvider is not configured correctly
