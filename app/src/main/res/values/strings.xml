@@ -2,7 +2,7 @@
     <string name="app_name">DND_sheet</string>
     <string name="title_status">Status</string>
     <string name="title_equipment">Equipment</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_personal_traits">Personal traits</string>
     <string name="image_description">DESCRIPTION</string>
     <string name="init_value">0</string>
     <string name="name">Name:</string>
