@@ -37,6 +37,8 @@ import com.example.dnd_sheet.R
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import androidx.core.graphics.scale
+import androidx.core.graphics.drawable.toDrawable
 
 class Tools {
     companion object {
@@ -432,17 +434,12 @@ class Tools {
             val uncheckedBitmap = uncheckedDrawable!!.toBitmap()
 
             val checkedResized =
-                Bitmap.createScaledBitmap(checkedBitmap, width.rawWidth(), height.rawHeight(), true)
+                checkedBitmap.scale(width.rawWidth(), height.rawHeight())
             val uncheckedResized =
-                Bitmap.createScaledBitmap(
-                    uncheckedBitmap,
-                    width.rawWidth(),
-                    height.rawHeight(),
-                    true
-                )
+                uncheckedBitmap.scale(width.rawWidth(), height.rawHeight())
 
-            val checkedResizedDrawable = BitmapDrawable(context.resources, checkedResized)
-            val uncheckedResizedDrawable = BitmapDrawable(context.resources, uncheckedResized)
+            val checkedResizedDrawable = checkedResized.toDrawable(context.resources)
+            val uncheckedResizedDrawable = uncheckedResized.toDrawable(context.resources)
 
             radioButton.buttonDrawable = uncheckedResizedDrawable
             radioButton.setOnCheckedChangeListener { buttonView, isChecked ->
