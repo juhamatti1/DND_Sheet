@@ -300,6 +300,9 @@ class EquipmentFragment : Fragment() {
             if (!hasFocus) {
                 Character.getInstance().attacksSpellcastingText =
                     (view as EditText).text.toString()
+                // Request to calculate edit text size so scrollableView can determine if edit text
+                // fits in it or needs to enable scrolling
+                attacksSpellcastingText.requestLayout()
             }
         }
         var scrollableView =
@@ -397,6 +400,9 @@ class EquipmentFragment : Fragment() {
             if (!hasFocus) {
                 Character.getInstance().equipmentText =
                     (view as EditText).text.toString()
+                // Request to calculate edit text size so scrollableView can determine if edit text
+                // fits in it or needs to enable scrolling
+                equipmentText.requestLayout()
             }
         }
         scrollableView =

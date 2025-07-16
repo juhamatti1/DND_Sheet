@@ -101,6 +101,9 @@ class StatusFragment : Fragment() {
         proficienciesEditText.setOnFocusChangeListener { view, hasFocus ->
             if (!hasFocus) {
                 Character.getInstance().proficienciesAndLanguages = (view as EditText).text.toString()
+                // Request to calculate edit text size so scrollableView can determine if edit text
+                // fits in it or needs to enable scrolling
+                proficienciesEditText.requestLayout()
             }
         }
         val scrollableView = Tools.createScrollableView(
