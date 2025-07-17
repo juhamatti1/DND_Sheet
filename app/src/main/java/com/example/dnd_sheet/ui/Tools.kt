@@ -175,6 +175,7 @@ class Tools {
                 EditTextsId.GP -> editTextView.setText(Character.getInstance().gp.toString())
                 EditTextsId.PP -> editTextView.setText(Character.getInstance().pp.toString())
                 EditTextsId.EQUPIMENT_TEXT -> editTextView.setText(Character.getInstance().equipmentText)
+                EditTextsId.PERSONAL_TRAITS -> editTextView.setText(Character.getInstance().personalTraitText)
             }
             return editTextView
         }

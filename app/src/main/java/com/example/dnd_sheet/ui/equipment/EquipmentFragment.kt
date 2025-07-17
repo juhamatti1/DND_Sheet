@@ -24,7 +24,7 @@ class EquipmentFragment : Fragment() {
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
-    lateinit var equipmentLayout: ConstraintLayout
+    lateinit var layout: ConstraintLayout
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,20 +33,20 @@ class EquipmentFragment : Fragment() {
     ): View {
         _binding = FragmentEquipmentBinding.inflate(inflater, container, false)
 
-        equipmentLayout = binding.root.findViewById(R.id.equipment_layout)
+        layout = binding.root.findViewById(R.id.equipment_layout)
 
         // Check if there is already local character file. Load it if there is
         Tools.loadCharacterFromFile(Tools.checkContext(context))
 
-        if (equipmentLayout.width > 0) {
+        if (layout.width > 0) {
             // Layout already have dimensions so OnGlobalLayoutListener won't be called
             drawLayout()
         } else {
-            equipmentLayout.viewTreeObserver.addOnGlobalLayoutListener(object :
+            layout.viewTreeObserver.addOnGlobalLayoutListener(object :
                 ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     //Remove the listener before proceeding. This callback is for the initial only
-                    equipmentLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    layout.viewTreeObserver.removeOnGlobalLayoutListener(this)
 
                     drawLayout()
                 }
@@ -70,7 +70,7 @@ class EquipmentFragment : Fragment() {
 
         val ctx = Tools.checkContext(context)
 
-        Tools.setLayout(equipmentLayout)
+        Tools.setLayout(layout)
         Tools.drawableToLayout(R.drawable.equipment, ctx)
 
         val armorView =

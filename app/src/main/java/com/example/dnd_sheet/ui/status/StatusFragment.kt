@@ -20,7 +20,7 @@ class StatusFragment : Fragment() {
 
     // ? makes possible that variable can be declared as null
     private var _binding: FragmentStatusBinding? = null
-    lateinit var statsLayout: ConstraintLayout
+    lateinit var layout: ConstraintLayout
 
 
     // This property is only valid between onCreateView and
@@ -39,20 +39,20 @@ class StatusFragment : Fragment() {
     ): View {
         _binding = FragmentStatusBinding.inflate(inflater, container, false)
 
-        statsLayout = binding.root.findViewById(R.id.stats_layout)
+        layout = binding.root.findViewById(R.id.stats_layout)
 
         // Check if there is already local character file. Load it if yes
         Tools.loadCharacterFromFile(Tools.checkContext(context))
 
-        if (statsLayout.width > 0) {
+        if (layout.width > 0) {
             // Layout already have dimensions so OnGlobalLayoutListener won't be called
             drawLayout()
         } else {
-            statsLayout.viewTreeObserver.addOnGlobalLayoutListener(object :
+            layout.viewTreeObserver.addOnGlobalLayoutListener(object :
                 ViewTreeObserver.OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
                     //Remove the listener before proceeding. This callback is for the initial only
-                    statsLayout.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    layout.viewTreeObserver.removeOnGlobalLayoutListener(this)
 
                     drawLayout()
                 }
@@ -73,7 +73,7 @@ class StatusFragment : Fragment() {
     }
 
     fun drawLayout() {
-        Tools.setLayout(statsLayout)
+        Tools.setLayout(layout)
 
         val ctx = Tools.checkContext(context)
 
