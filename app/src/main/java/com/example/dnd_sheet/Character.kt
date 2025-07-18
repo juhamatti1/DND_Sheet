@@ -70,6 +70,7 @@ class Character private constructor() {
     var gp: Int = 0
     var pp: Int = 0
     var equipmentText: String = ""
+    var personalTraitText: String = ""
 
     enum class MainStats {
         STRENGTH, DEXTERITY, CONSTITUTION, INTELLIGENCE, WISDOM, CHARISMA, INSPIRATION,
@@ -77,10 +78,10 @@ class Character private constructor() {
     }
 
     enum class EditTextsId {
-        MAINSTATS, SAVING_THROWS, SKILLS, ARMOR_CLASS, INITIATIVE, SPEED, PROFIENCIES_AND_LANGUAGES,
+        MAINSTATS, SAVING_THROWS, SKILLS, ARMOR_CLASS, INITIATIVE, SPEED, PROFICIENCIES_AND_LANGUAGES,
         HIT_POINT_MAXIMUM, CURRENT_HIT_POINTS, TEMPORARY_HIT_POINTS, HIT_DICE, HIT_DICE_TOTAL,
         SUCCESSES, FAILURES, ATTACKS_SPELLCASTING, ATTACKS_SPELLCASTING_TEXT, CP, SP, EP, GP, PP,
-        EQUPIMENT_TEXT
+        EQUIPMENT_TEXT, PERSONAL_TRAITS
     }
 
     enum class SavingThrows {

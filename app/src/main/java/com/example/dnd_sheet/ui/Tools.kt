@@ -5,7 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Matrix
-import android.graphics.drawable.BitmapDrawable
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
@@ -19,26 +18,25 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioButton
-import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.scale
 import androidx.core.widget.NestedScrollView
 import androidx.core.widget.addTextChangedListener
 import com.example.dnd_sheet.Character
+import com.example.dnd_sheet.Character.EditTextsId
 import com.example.dnd_sheet.Character.MainStats
 import com.example.dnd_sheet.Character.SavingThrows
 import com.example.dnd_sheet.Character.Skills
-import com.example.dnd_sheet.Character.EditTextsId
 import com.example.dnd_sheet.R
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
-import androidx.core.graphics.scale
-import androidx.core.graphics.drawable.toDrawable
 
 class Tools {
     companion object {
@@ -153,7 +151,7 @@ class Tools {
                 EditTextsId.ARMOR_CLASS -> editTextView.setText(Character.getInstance().armorClass.toString())
                 EditTextsId.INITIATIVE -> editTextView.setText(Character.getInstance().initiative.toString())
                 EditTextsId.SPEED -> editTextView.setText(Character.getInstance().speed.toString())
-                EditTextsId.PROFIENCIES_AND_LANGUAGES -> editTextView.setText(Character.getInstance().proficienciesAndLanguages)
+                EditTextsId.PROFICIENCIES_AND_LANGUAGES -> editTextView.setText(Character.getInstance().proficienciesAndLanguages)
                 EditTextsId.HIT_POINT_MAXIMUM -> editTextView.setText(Character.getInstance().hitpointMaximum.toString())
                 EditTextsId.CURRENT_HIT_POINTS -> editTextView.setText(Character.getInstance().currentHitpoint.toString())
                 EditTextsId.TEMPORARY_HIT_POINTS -> editTextView.setText(Character.getInstance().temporaryHitpoint.toString())
@@ -168,13 +166,14 @@ class Tools {
                         )
                     }
                 }
+
                 EditTextsId.ATTACKS_SPELLCASTING_TEXT -> editTextView.setText(Character.getInstance().attacksSpellcastingText)
                 EditTextsId.CP -> editTextView.setText(Character.getInstance().cp.toString())
                 EditTextsId.SP -> editTextView.setText(Character.getInstance().sp.toString())
                 EditTextsId.EP -> editTextView.setText(Character.getInstance().ep.toString())
                 EditTextsId.GP -> editTextView.setText(Character.getInstance().gp.toString())
                 EditTextsId.PP -> editTextView.setText(Character.getInstance().pp.toString())
-                EditTextsId.EQUPIMENT_TEXT -> editTextView.setText(Character.getInstance().equipmentText)
+                EditTextsId.EQUIPMENT_TEXT -> editTextView.setText(Character.getInstance().equipmentText)
                 EditTextsId.PERSONAL_TRAITS -> editTextView.setText(Character.getInstance().personalTraitText)
             }
             return editTextView
@@ -183,7 +182,8 @@ class Tools {
         fun createMainStatsViews(context: Context) {
             for (i in 0..5) {
                 // Creating edit texts for main stats
-                val mainStatEditText = createEditText(0.14, 0.03, EditTextsId.MAINSTATS, i, context = context)
+                val mainStatEditText =
+                    createEditText(0.14, 0.03, EditTextsId.MAINSTATS, i, context = context)
 
                 // Creating text views for bonus stats
                 val bonusView = TextView(context)
@@ -291,7 +291,11 @@ class Tools {
             // Creating edit texts for saving throws
             for (savingThrow in SavingThrows.entries) {
                 val proficiencyButton =
-                    createRadioButton(savingThrow.ordinal, EditTextsId.SAVING_THROWS, context = context)
+                    createRadioButton(
+                        savingThrow.ordinal,
+                        EditTextsId.SAVING_THROWS,
+                        context = context
+                    )
 
                 setViewToLayout(
                     proficiencyButton,
@@ -335,14 +339,22 @@ class Tools {
 
             // Creating edit texts for skills
             for (skills in Skills.entries) {
-                val proficiencyButton = createRadioButton(skills.ordinal, EditTextsId.SKILLS, context = context)
+                val proficiencyButton =
+                    createRadioButton(skills.ordinal, EditTextsId.SKILLS, context = context)
                 setViewToLayout(
                     proficiencyButton,
                     0.445 to 0.305 + skills.ordinal.toDouble() * 0.0206
                 )
 
                 val skillsView =
-                    createEditText(0.07, 0.026, EditTextsId.SKILLS, skills.ordinal, 10f, context = context)
+                    createEditText(
+                        0.07,
+                        0.026,
+                        EditTextsId.SKILLS,
+                        skills.ordinal,
+                        10f,
+                        context = context
+                    )
                 skillsView.addTextChangedListener(SkillsUpdater(skillsView, skills))
                 setViewToLayout(skillsView, 0.5 to 0.3 + skills.ordinal.toDouble() * 0.02065)
             }
@@ -380,24 +392,65 @@ class Tools {
             setViewToLayout(passiveWisdomText, 0.082 to 0.71)
         }
 
-        fun createScrollableView(context: Context, editText: EditText, width: Double, height: Double): RelativeLayout {
-            val layout = RelativeLayout(context)
-            layout.id = View.generateViewId()
-            layout.layoutParams = ViewGroup.LayoutParams(width.rawWidth(), height.rawHeight())
+        fun createScrollableEditText(
+            context: Context,
+            width: Double,
+            height: Double,
+            id: EditTextsId
+        ): NestedScrollView {
+            val editText = createEditText(
+                0.0,
+                0.0,
+                id,
+                inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
+                gravity = Gravity.START or Gravity.TOP,
+                context = context
+            )
+
+            editText.setOnFocusChangeListener { view, hasFocus ->
+                if (!hasFocus) {
+                    when (id) {
+                        EditTextsId.PERSONAL_TRAITS -> Character.getInstance().personalTraitText =
+                            (view as EditText).text.toString()
+
+                        EditTextsId.PROFICIENCIES_AND_LANGUAGES -> Character.getInstance().proficienciesAndLanguages =
+                            (view as EditText).text.toString()
+
+                        EditTextsId.ATTACKS_SPELLCASTING_TEXT -> Character.getInstance().attacksSpellcastingText =
+                            (view as EditText).text.toString()
+
+                        EditTextsId.EQUIPMENT_TEXT -> Character.getInstance().equipmentText =
+                            (view as EditText).text.toString()
+
+                        else -> throw Exception("Invalid edit text id in createScrollableEditText: $id")
+                    }
+                }
+            }
+            editText.addTextChangedListener(
+                object : TextWatcher {
+                    override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                        // Request to calculate edit text size so scrollableView can determine if edit text
+                        // fits in it or needs to enable scrolling
+                        editText.requestLayout()
+                    }
+
+                    override fun afterTextChanged(p0: Editable?) {}
+                    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+                }
+            )
 
             val nestedScrollView = NestedScrollView(context)
             nestedScrollView.id = View.generateViewId()
             nestedScrollView.isFillViewport = true
-            nestedScrollView.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            nestedScrollView.layoutParams =
+                ConstraintLayout.LayoutParams(width.rawWidth(), height.rawHeight())
             nestedScrollView.smoothScrollBy(0, 0)
-
-            layout.addView(nestedScrollView)
 
             editText.layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
 
             nestedScrollView.addView(editText)
 
-            return layout
+            return nestedScrollView
         }
 
         // ToDo: RadioButton icon is not same size for different display resolutions and dpi. Make something to match those

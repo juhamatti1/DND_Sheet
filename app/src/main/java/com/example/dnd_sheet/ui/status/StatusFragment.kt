@@ -1,16 +1,12 @@
 package com.example.dnd_sheet.ui.status
 
 import android.os.Bundle
-import android.text.InputType
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
-import android.widget.EditText
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
-import com.example.dnd_sheet.Character
 import com.example.dnd_sheet.Character.EditTextsId
 import com.example.dnd_sheet.R
 import com.example.dnd_sheet.databinding.FragmentStatusBinding
@@ -89,28 +85,11 @@ class StatusFragment : Fragment() {
 
         Tools.createPassiveWisdom(ctx)
 
-        val proficienciesEditText = Tools.createEditText(
-            0.0,
-            0.0,
-            EditTextsId.PROFIENCIES_AND_LANGUAGES,
-            textSize = 15f,
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
-            gravity = Gravity.START or Gravity.TOP,
-            context = ctx
-        )
-        proficienciesEditText.setOnFocusChangeListener { view, hasFocus ->
-            if (!hasFocus) {
-                Character.getInstance().proficienciesAndLanguages = (view as EditText).text.toString()
-                // Request to calculate edit text size so scrollableView can determine if edit text
-                // fits in it or needs to enable scrolling
-                proficienciesEditText.requestLayout()
-            }
-        }
-        val scrollableView = Tools.createScrollableView(
+        val scrollableView = Tools.createScrollableEditText(
             ctx,
-            proficienciesEditText,
             0.85,
-            0.195
+            0.195,
+            EditTextsId.PROFICIENCIES_AND_LANGUAGES
         )
         Tools.setViewToLayout(scrollableView, 0.11 to 0.769)
     }

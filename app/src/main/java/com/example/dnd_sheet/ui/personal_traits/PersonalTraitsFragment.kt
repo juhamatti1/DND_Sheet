@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
-import com.example.dnd_sheet.Character
+import com.example.dnd_sheet.Character.EditTextsId
 import com.example.dnd_sheet.R
 import com.example.dnd_sheet.databinding.FragmentPersonalTraitsBinding
 import com.example.dnd_sheet.ui.Tools
@@ -61,5 +61,13 @@ class PersonalTraitsFragment : Fragment() {
 
         Tools.setLayout(layout)
         Tools.drawableToLayout(R.drawable.personal_traits, ctx)
+
+        val scroll = Tools.createScrollableEditText(
+            ctx,
+            0.83,
+            0.08,
+            EditTextsId.PERSONAL_TRAITS
+        )
+        Tools.setViewToLayout(scroll, 0.09 to 0.02)
     }
 }

@@ -6,7 +6,6 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewTreeObserver
 import android.widget.EditText
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -284,29 +283,12 @@ class EquipmentFragment : Fragment() {
             }
         }
 
-        val attacksSpellcastingText = Tools.createEditText(
-            0.0,
-            0.0,
-            EditTextsId.ATTACKS_SPELLCASTING_TEXT,
-            gravity = Gravity.START or Gravity.TOP,
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
-            context = ctx
+        var scrollableView = Tools.createScrollableEditText(
+            ctx,
+            0.9,
+            0.17,
+            EditTextsId.ATTACKS_SPELLCASTING_TEXT
         )
-        attacksSpellcastingText.layoutParams = ViewGroup.LayoutParams(
-            MATCH_PARENT,
-            MATCH_PARENT
-        )
-        attacksSpellcastingText.setOnFocusChangeListener { view, hasFocus ->
-            if (!hasFocus) {
-                Character.getInstance().attacksSpellcastingText =
-                    (view as EditText).text.toString()
-                // Request to calculate edit text size so scrollableView can determine if edit text
-                // fits in it or needs to enable scrolling
-                attacksSpellcastingText.requestLayout()
-            }
-        }
-        var scrollableView =
-            Tools.createScrollableView(ctx, attacksSpellcastingText, 0.9, 0.17)
         Tools.setViewToLayout(scrollableView, 0.06 to 0.52)
 
         val cp = Tools.createEditText(
@@ -384,29 +366,7 @@ class EquipmentFragment : Fragment() {
         }
         Tools.setViewToLayout(pp, 0.077 to 0.895)
 
-        val equipmentText = Tools.createEditText(
-            0.0,
-            0.0,
-            EditTextsId.EQUPIMENT_TEXT,
-            gravity = Gravity.START or Gravity.TOP,
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
-            context = ctx
-        )
-        equipmentText.layoutParams = ViewGroup.LayoutParams(
-            MATCH_PARENT,
-            MATCH_PARENT
-        )
-        equipmentText.setOnFocusChangeListener { view, hasFocus ->
-            if (!hasFocus) {
-                Character.getInstance().equipmentText =
-                    (view as EditText).text.toString()
-                // Request to calculate edit text size so scrollableView can determine if edit text
-                // fits in it or needs to enable scrolling
-                equipmentText.requestLayout()
-            }
-        }
-        scrollableView =
-            Tools.createScrollableView(ctx, equipmentText, 0.6, 0.25)
+        scrollableView = Tools.createScrollableEditText(ctx, 0.6, 0.25, EditTextsId.EQUIPMENT_TEXT)
         Tools.setViewToLayout(scrollableView, 0.35 to 0.73)
     }
 }
