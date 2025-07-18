@@ -19,7 +19,6 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
@@ -175,6 +174,10 @@ class Tools {
                 EditTextsId.PP -> editTextView.setText(Character.getInstance().pp.toString())
                 EditTextsId.EQUIPMENT_TEXT -> editTextView.setText(Character.getInstance().equipmentText)
                 EditTextsId.PERSONAL_TRAITS -> editTextView.setText(Character.getInstance().personalTraitText)
+                EditTextsId.IDEALS -> editTextView.setText(Character.getInstance().idealsText)
+                EditTextsId.BONDS -> editTextView.setText(Character.getInstance().bondsText)
+                EditTextsId.FLAWS -> editTextView.setText(Character.getInstance().flawsText)
+                EditTextsId.FEATURES_AND_TRAITS -> editTextView.setText(Character.getInstance().featuresAndTraitsText)
             }
             return editTextView
         }
@@ -231,7 +234,6 @@ class Tools {
                     } catch (e: NumberFormatException) {
                         toastText = "Invalid number"
                         Log.e(TAG, toastText)
-                        Toast.makeText(context, toastText, Toast.LENGTH_SHORT).show()
                         return
                     }
                     removeZerosFromBegin(statText)
@@ -420,6 +422,18 @@ class Tools {
                             (view as EditText).text.toString()
 
                         EditTextsId.EQUIPMENT_TEXT -> Character.getInstance().equipmentText =
+                            (view as EditText).text.toString()
+
+                        EditTextsId.IDEALS -> Character.getInstance().idealsText =
+                            (view as EditText).text.toString()
+
+                        EditTextsId.BONDS -> Character.getInstance().bondsText =
+                            (view as EditText).text.toString()
+
+                        EditTextsId.FLAWS -> Character.getInstance().flawsText =
+                            (view as EditText).text.toString()
+
+                        EditTextsId.FEATURES_AND_TRAITS -> Character.getInstance().featuresAndTraitsText =
                             (view as EditText).text.toString()
 
                         else -> throw Exception("Invalid edit text id in createScrollableEditText: $id")

@@ -56,18 +56,55 @@ class PersonalTraitsFragment : Fragment() {
         _binding = null
     }
 
+    override fun onStop() {
+        super.onStop()
+        Tools.saveCharacterToFile(Tools.checkContext(context))
+    }
+
     private fun drawLayout() {
         val ctx = Tools.checkContext(context)
 
         Tools.setLayout(layout)
         Tools.drawableToLayout(R.drawable.personal_traits, ctx)
 
-        val scroll = Tools.createScrollableEditText(
+        var scroll = Tools.createScrollableEditText(
             ctx,
             0.83,
             0.08,
             EditTextsId.PERSONAL_TRAITS
         )
         Tools.setViewToLayout(scroll, 0.09 to 0.02)
+
+        scroll = Tools.createScrollableEditText(
+            ctx,
+            0.83,
+            0.055,
+            EditTextsId.IDEALS
+        )
+        Tools.setViewToLayout(scroll, 0.09 to 0.13)
+
+        scroll = Tools.createScrollableEditText(
+            ctx,
+            0.83,
+            0.055,
+            EditTextsId.BONDS
+        )
+        Tools.setViewToLayout(scroll, 0.09 to 0.215)
+
+        scroll = Tools.createScrollableEditText(
+            ctx,
+            0.83,
+            0.055,
+            EditTextsId.FLAWS
+        )
+        Tools.setViewToLayout(scroll, 0.09 to 0.303)
+
+        scroll = Tools.createScrollableEditText(
+            ctx,
+            0.9,
+            0.57,
+            EditTextsId.FEATURES_AND_TRAITS
+        )
+        Tools.setViewToLayout(scroll, 0.05 to 0.41)
     }
 }
