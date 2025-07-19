@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
+        android:id="@+id/navigation_basic_name"
+        android:icon="@drawable/basic_name_icon"
+        android:title="@string/title_basic_name" />
+
+    <item
         android:id="@+id/navigation_status"
         android:icon="@drawable/status_icon_24"
         android:title="@string/title_status" />

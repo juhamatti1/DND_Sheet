@@ -7,7 +7,6 @@
     tools:context=".ui.equipment.EquipmentFragment">
 
     <ScrollView
-        android:id="@+id/equipment_scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_constraintStart_toStartOf="parent"

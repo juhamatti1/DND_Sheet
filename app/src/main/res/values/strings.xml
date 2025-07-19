@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">DND_sheet</string>
     <string name="title_status">Status</string>
+    <string name="title_basic_name">Name</string>
     <string name="title_equipment">Equipment</string>
     <string name="title_personal_traits">Personal traits</string>
     <string name="image_description">DESCRIPTION</string>

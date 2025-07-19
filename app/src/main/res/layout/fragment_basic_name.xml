@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.personal_traits.PersonalTraitsFragment">
+    tools:context=".ui.basic_name.BasicNameFragment">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -14,7 +14,7 @@
         app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/personal_traits_layout"
+            android:id="@+id/basic_name_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">

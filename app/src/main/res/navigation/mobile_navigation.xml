@@ -3,7 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_status">
+    app:startDestination="@+id/navigation_basic_name">
+
+    <fragment
+        android:id="@+id/navigation_basic_name"
+        android:name="com.example.dnd_sheet.ui.basic_name.BasicNameFragment"
+        android:label="@string/title_basic_name"
+        tools:layout="@layout/fragment_basic_name" />
 
     <fragment
         android:id="@+id/navigation_status"

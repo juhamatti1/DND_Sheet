@@ -47,13 +47,15 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         supportActionBar?.hide()
 
-
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_status, R.id.navigation_equipment, R.id.navigation_personal_traits
+                R.id.navigation_basic_name,
+                R.id.navigation_status,
+                R.id.navigation_equipment,
+                R.id.navigation_personal_traits
             )
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
