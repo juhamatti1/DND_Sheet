@@ -70,7 +70,7 @@ class EquipmentFragment : Fragment() {
         val ctx = Tools.checkContext(context)
 
         Tools.setLayout(layout)
-        Tools.drawableToLayout(R.drawable.equipment, ctx)
+        Tools.setDrawableToLayout(R.drawable.equipment, ctx)
 
         val armorView =
             Tools.createEditText(

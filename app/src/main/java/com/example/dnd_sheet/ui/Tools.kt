@@ -18,7 +18,6 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioButton
-import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
@@ -26,12 +25,8 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.scale
 import androidx.core.widget.NestedScrollView
-import androidx.core.widget.addTextChangedListener
 import com.example.dnd_sheet.Character
 import com.example.dnd_sheet.Character.EditTextsId
-import com.example.dnd_sheet.Character.MainStats
-import com.example.dnd_sheet.Character.SavingThrows
-import com.example.dnd_sheet.Character.Skills
 import com.example.dnd_sheet.R
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -92,7 +87,7 @@ class Tools {
             drawableLayout = layout
         }
 
-        fun drawableToLayout(drawable: Int, context: Context) {
+        fun setDrawableToLayout(drawable: Int, context: Context) {
             // Change layout width x height ratio to match background image
             val bitmap = BitmapFactory.decodeResource(context.resources, drawable)
 
@@ -180,218 +175,6 @@ class Tools {
                 EditTextsId.FEATURES_AND_TRAITS -> editTextView.setText(Character.getInstance().featuresAndTraitsText)
             }
             return editTextView
-        }
-
-        fun createMainStatsViews(context: Context) {
-            for (i in 0..5) {
-                // Creating edit texts for main stats
-                val mainStatEditText =
-                    createEditText(0.14, 0.03, EditTextsId.MAINSTATS, i, context = context)
-
-                // Creating text views for bonus stats
-                val bonusView = TextView(context)
-                bonusView.id = View.generateViewId()
-                bonusView.layoutParams = ViewGroup.LayoutParams(0.14.rawWidth(), 0.03.rawHeight())
-                bonusView.textSize = 20f
-                bonusView.gravity = Gravity.CENTER
-                bonusView.text =
-                    calculateSubValue(stringToInt(mainStatEditText.text.toString())).toString()
-                bonusView.setTextColor(Color.BLACK)
-
-                // Listener to update bonus stats when main stat is edited
-                mainStatEditText.addTextChangedListener(afterTextChanged = listener@{ editedText: Editable? ->
-                    // Logic for increasing/decreasing stat bonus based on typed main value
-                    val mainValue: Int = stringToInt(editedText.toString())
-                    if (mainValue == Int.MIN_VALUE) {
-                        return@listener
-                    }
-
-                    val subValue: Int = calculateSubValue(mainValue)
-                    bonusView.text = subValue.toString()
-
-                    removeZerosFromBegin(mainStatEditText)
-
-                    val stat: MainStats = MainStats.entries[i]
-                    if (!stat.equals(null)) {
-                        Character.getInstance().mainStats[stat.ordinal] = mainValue
-                    }
-                })
-
-                setViewToLayout(mainStatEditText, 0.155 to (0.06 + i.toDouble() * 0.109))
-                setViewToLayout(bonusView, 0.155 to (0.095 + i.toDouble() * 0.109))
-            }
-        }
-
-        fun createInspirationAndProficiencyBonusViews(context: Context) {
-
-            class CharacterStatUpdater(val statText: EditText, val i: Int) : TextWatcher {
-                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-                override fun afterTextChanged(newText: Editable?) {
-                    val toastText: String
-                    val value: Int = try {
-                        newText.toString().toInt()
-                    } catch (e: NumberFormatException) {
-                        toastText = "Invalid number"
-                        Log.e(TAG, toastText)
-                        return
-                    }
-                    removeZerosFromBegin(statText)
-                    Character.getInstance().mainStats[i] = value
-                }
-            }
-
-            // Creating edit text for inspiration
-            val inspirationText =
-                createEditText(
-                    0.14,
-                    0.034,
-                    EditTextsId.MAINSTATS,
-                    MainStats.INSPIRATION.ordinal,
-                    context = context
-                )
-            inspirationText.addTextChangedListener(
-                CharacterStatUpdater(
-                    inspirationText,
-                    MainStats.INSPIRATION.ordinal
-                )
-            )
-            setViewToLayout(inspirationText, 0.41 to 0.01)
-
-            // Creating edit text for proficiency bonus
-            val proficiencyText = createEditText(
-                0.145,
-                0.034,
-                EditTextsId.MAINSTATS,
-                MainStats.PROFICIENCY_BONUS.ordinal,
-                context = context
-            )
-            proficiencyText.addTextChangedListener(
-                CharacterStatUpdater(
-                    proficiencyText,
-                    MainStats.PROFICIENCY_BONUS.ordinal
-                )
-            )
-            setViewToLayout(proficiencyText, 0.41 to 0.067)
-        }
-
-        fun createSavingThrows(context: Context) {
-            class SavingThrowUpdater(val statText: EditText, val savingThrows: SavingThrows) :
-                TextWatcher {
-                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-                override fun afterTextChanged(newText: Editable?) {
-                    val value = stringToInt(newText.toString())
-                    if (value == Int.MIN_VALUE) {
-                        return
-                    }
-                    removeZerosFromBegin(statText)
-                    Character.getInstance().savingThrows[savingThrows.ordinal] = value
-                }
-            }
-
-            // Creating edit texts for saving throws
-            for (savingThrow in SavingThrows.entries) {
-                val proficiencyButton =
-                    createRadioButton(
-                        savingThrow.ordinal,
-                        EditTextsId.SAVING_THROWS,
-                        context = context
-                    )
-
-                setViewToLayout(
-                    proficiencyButton,
-                    0.445 to 0.129 + savingThrow.ordinal.toDouble() * 0.02065
-                )
-
-                val savingThrowView = createEditText(
-                    0.08,
-                    0.026,
-                    EditTextsId.SAVING_THROWS,
-                    savingThrow.ordinal,
-                    10f,
-                    context = context
-                )
-                savingThrowView.addTextChangedListener(
-                    SavingThrowUpdater(
-                        savingThrowView,
-                        savingThrow
-                    )
-                )
-                setViewToLayout(
-                    savingThrowView,
-                    0.505 to 0.124 + savingThrow.ordinal.toDouble() * 0.0207
-                )
-            }
-        }
-
-        fun createSkills(context: Context) {
-            class SkillsUpdater(val statText: EditText, val skills: Skills) : TextWatcher {
-                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-                override fun afterTextChanged(newText: Editable?) {
-                    val value = stringToInt(newText.toString())
-                    if (value == Int.MIN_VALUE) {
-                        return
-                    }
-                    removeZerosFromBegin(statText)
-                    Character.getInstance().skills[skills.ordinal] = value
-                }
-            }
-
-            // Creating edit texts for skills
-            for (skills in Skills.entries) {
-                val proficiencyButton =
-                    createRadioButton(skills.ordinal, EditTextsId.SKILLS, context = context)
-                setViewToLayout(
-                    proficiencyButton,
-                    0.445 to 0.305 + skills.ordinal.toDouble() * 0.0206
-                )
-
-                val skillsView =
-                    createEditText(
-                        0.07,
-                        0.026,
-                        EditTextsId.SKILLS,
-                        skills.ordinal,
-                        10f,
-                        context = context
-                    )
-                skillsView.addTextChangedListener(SkillsUpdater(skillsView, skills))
-                setViewToLayout(skillsView, 0.5 to 0.3 + skills.ordinal.toDouble() * 0.02065)
-            }
-        }
-
-        fun createPassiveWisdom(context: Context) {
-            class CharacterStatUpdater(val statText: EditText, val i: Int) : TextWatcher {
-                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
-                override fun afterTextChanged(newText: Editable?) {
-                    val value: Int = try {
-                        newText.toString().toInt()
-                    } catch (e: NumberFormatException) {
-                        return
-                    }
-                    removeZerosFromBegin(statText)
-                    Character.getInstance().mainStats[i] = value
-                }
-            }
-
-            // Creating edit text for passive wisdom
-            val passiveWisdomText = createEditText(
-                0.145,
-                0.04,
-                EditTextsId.MAINSTATS,
-                MainStats.PASSIVE_WISDOM.ordinal,
-                context = context
-            )
-            passiveWisdomText.addTextChangedListener(
-                CharacterStatUpdater(
-                    passiveWisdomText,
-                    MainStats.PASSIVE_WISDOM.ordinal
-                )
-            )
-            setViewToLayout(passiveWisdomText, 0.082 to 0.71)
         }
 
         fun createScrollableEditText(
@@ -588,18 +371,8 @@ class Tools {
             constraintSet.applyTo(drawableLayout)
         }
 
-        private fun calculateSubValue(mainValue: Int): Int {
-            var subValue: Int = (mainValue - 10) / 2
-            val fragmentValue = (mainValue - 10) % 2
-            if (fragmentValue > 0) {
-                subValue += 1
-            } else if (fragmentValue < 0) {
-                subValue -= 1
-            }
-            return subValue
-        }
 
-        private fun removeZerosFromBegin(editText: EditText) {
+        fun removeZerosFromBegin(editText: EditText) {
             val textString = editText.text
             if (textString[0] == '0' && textString.length > 1) {
                 editText.setText(textString.removeRange(0, 1))
@@ -618,7 +391,7 @@ class Tools {
             return value
         }
 
-        private fun Double.rawWidth(): Int {
+        fun Double.rawWidth(): Int {
             return (this * drawableSize.width).toInt()
         }
 

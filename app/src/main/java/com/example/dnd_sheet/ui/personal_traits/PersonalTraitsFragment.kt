@@ -65,7 +65,7 @@ class PersonalTraitsFragment : Fragment() {
         val ctx = Tools.checkContext(context)
 
         Tools.setLayout(layout)
-        Tools.drawableToLayout(R.drawable.personal_traits, ctx)
+        Tools.setDrawableToLayout(R.drawable.personal_traits, ctx)
 
         var scroll = Tools.createScrollableEditText(
             ctx,

@@ -64,6 +64,6 @@ class BasicNameFragment : Fragment() {
         val ctx = Tools.checkContext(context)
 
         Tools.setLayout(layout)
-        Tools.drawableToLayout(R.drawable.basic_name, ctx)
+        Tools.setDrawableToLayout(R.drawable.basic_name, ctx)
     }
 }
