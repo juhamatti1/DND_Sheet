@@ -222,7 +222,7 @@ class StatusFragment : Fragment() {
                 Tools.createRadioButton(skills.ordinal, EditTextsId.SKILLS, context = context)
             Tools.setViewToLayout(
                 proficiencyButton,
-                0.445 to 0.305 + skills.ordinal.toDouble() * 0.0206
+                0.445 to 0.304 + skills.ordinal.toDouble() * 0.02065
             )
 
             val skillsView =
@@ -297,7 +297,7 @@ class StatusFragment : Fragment() {
 
             Tools.setViewToLayout(
                 proficiencyButton,
-                0.445 to 0.129 + savingThrow.ordinal.toDouble() * 0.02065
+                0.445 to 0.128 + savingThrow.ordinal.toDouble() * 0.02065
             )
 
             val savingThrowView = Tools.createEditText(
