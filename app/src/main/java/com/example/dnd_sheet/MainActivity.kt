@@ -20,14 +20,17 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.example.dnd_sheet.databinding.ActivityMainBinding
 import com.example.dnd_sheet.ui.Tools
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.serialization.encodeToString
+import com.google.android.material.navigation.NavigationView
 import kotlinx.serialization.json.Json
 import java.io.BufferedReader
 import java.io.IOException
@@ -36,37 +39,46 @@ import java.io.InputStreamReader
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navController: NavController
     private var TAG: String = "MainActivity"
-    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        supportActionBar?.hide()
+        drawerLayout = findViewById(R.id.drawer_layout)
 
         val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as NavHostFragment
-        val navController = navHost.navController
+        navController = navHost.navController
+
+        val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
+        setSupportActionBar(toolbar)
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
-        val appBarConfiguration = AppBarConfiguration(
+        appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.navigation_basic_name,
                 R.id.navigation_status,
                 R.id.navigation_equipment,
                 R.id.navigation_personal_traits
-            )
+            ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        val navView: BottomNavigationView = binding.navView
-        navView.setupWithNavController(navController)
+        // --- Setup NavigationView (Drawer) ---
+        val navigationView = findViewById<NavigationView>(R.id.navigation_view)
+        navigationView.setupWithNavController(navController)
 
-        val menuButton = findViewById<Button>(R.id.menu_button)
-        menuButton.setOnClickListener { anchor ->
-            showPopupMenu(anchor)
-        }
+        // --- Setup BottomNavigationView ---
+        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation_view)
+        bottomNavigationView.setupWithNavController(navController)
+
+//        val menuButton = findViewById<Button>(R.id.menu_button)
+//        menuButton.setOnClickListener { anchor ->
+//            showPopupMenu(anchor)
+//        }
 
         openFileActivityLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
@@ -88,7 +100,7 @@ class MainActivity : AppCompatActivity() {
                 Tools.saveCharacterToFile(applicationContext)
 
                 val navHostFragment =
-                    supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+                    supportFragmentManager.findFragmentById(R.id.bottom_navigation_view) as? NavHostFragment
                         ?: return@registerForActivityResult
                 val currentFragment =
                     navHostFragment.childFragmentManager.primaryNavigationFragment
@@ -107,6 +119,11 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Error parsing file: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    // Handle the Up button (and hamburger icon)
+    override fun onSupportNavigateUp(): Boolean {
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
     private fun showPopupMenu(anchor: View) {
