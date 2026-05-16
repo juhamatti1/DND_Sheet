@@ -200,6 +200,13 @@ class Tools {
                 EditTextsId.BONDS -> editTextView.setText(Character.getInstance().bondsText)
                 EditTextsId.FLAWS -> editTextView.setText(Character.getInstance().flawsText)
                 EditTextsId.FEATURES_AND_TRAITS -> editTextView.setText(Character.getInstance().featuresAndTraitsText)
+                EditTextsId.CHARACTER_NAME -> editTextView.setText(Character.getInstance().character_name)
+                EditTextsId.CLASS_LEVEL -> editTextView.setText(Character.getInstance().class_level)
+                EditTextsId.BACKGROUND -> editTextView.setText(Character.getInstance().background)
+                EditTextsId.PLAYER_NAME -> editTextView.setText(Character.getInstance().player_name)
+                EditTextsId.RACE -> editTextView.setText(Character.getInstance().race)
+                EditTextsId.ALIGNMENT -> editTextView.setText(Character.getInstance().alignment)
+                EditTextsId.EXPERIENCE_POINTS -> editTextView.setText(Character.getInstance().expererience_points)
             }
             return editTextView
         }
@@ -406,6 +413,9 @@ class Tools {
 
         fun removeZerosFromBegin(editText: EditText) {
             val textString = editText.text
+            if(textString.isEmpty()) {
+                return
+            }
             if (textString[0] == '0' && textString.length > 1) {
                 editText.setText(textString.removeRange(0, 1))
                 // Set cursor to the end of edit text after removing "0"

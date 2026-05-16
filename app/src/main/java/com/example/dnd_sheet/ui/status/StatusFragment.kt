@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
+import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
 import android.view.Gravity
@@ -92,6 +93,8 @@ class StatusFragment : Fragment() {
         Tools.setDrawableToLayout(R.drawable.basic_name, ctx)
         Tools.setDrawableToLayout(R.drawable.stats, ctx, true)
 
+        createBasicName(ctx)
+
         createMainStatsViews(ctx)
 
         createInspirationAndProficiencyBonusViews(ctx)
@@ -109,6 +112,71 @@ class StatusFragment : Fragment() {
             EditTextsId.PROFICIENCIES_AND_LANGUAGES
         )
         Tools.setViewToLayout(scrollableView, 0.11 to 0.769)
+    }
+
+    enum class FieldsEnum {
+        width,
+        height,
+        x,
+        y
+    }
+
+    private fun createBasicName(ctx: Context) {
+        val characterName =
+            Tools.createEditText(
+                0.29,
+                0.01,
+                EditTextsId.CHARACTER_NAME,
+                textSize = 10f,
+                inputType = InputType.TYPE_CLASS_TEXT,
+                context = ctx)
+
+        characterName.addTextChangedListener(afterTextChanged = listener@{ editedText: Editable? ->
+            Character.getInstance().character_name = editedText.toString()
+        })
+
+        Tools.setViewToLayout(characterName, 0.07 to 0.024)
+
+
+        val fieldsMap = mapOf(                   // width, height, x, y
+            EditTextsId.CLASS_LEVEL to doubleArrayOf(0.18, 0.0077, 0.443, 0.016),
+            EditTextsId.RACE to doubleArrayOf(0.18, 0.0077, 0.443, 0.0295),
+            EditTextsId.BACKGROUND to doubleArrayOf(0.15, 0.0077, 0.635, 0.016),
+            EditTextsId.ALIGNMENT to doubleArrayOf(0.15, 0.0077, 0.635, 0.0295),
+            EditTextsId.PLAYER_NAME to doubleArrayOf(0.15, 0.0077, 0.799, 0.016),
+            EditTextsId.EXPERIENCE_POINTS to doubleArrayOf(0.15, 0.0077, 0.799, 0.0295),
+        )
+
+
+
+        for(fieldPair in fieldsMap) {
+            val editText =
+                Tools.createEditText(
+                    fieldPair.value[FieldsEnum.width.ordinal],
+                    fieldPair.value[FieldsEnum.height.ordinal],
+                    fieldPair.key,
+                    textSize = 8f,
+                    inputType = InputType.TYPE_CLASS_TEXT,
+                    context = ctx)
+
+            editText.addTextChangedListener(afterTextChanged = listener@{ editedText: Editable? ->
+                when(fieldPair.key) {
+                    EditTextsId.CLASS_LEVEL -> Character.getInstance().class_level = editedText.toString()
+                    EditTextsId.RACE -> Character.getInstance().race = editedText.toString()
+                    EditTextsId.BACKGROUND -> Character.getInstance().background = editedText.toString()
+                    EditTextsId.ALIGNMENT -> Character.getInstance().alignment = editedText.toString()
+                    EditTextsId.PLAYER_NAME -> Character.getInstance().player_name = editedText.toString()
+                    EditTextsId.EXPERIENCE_POINTS -> Character.getInstance().expererience_points = editedText.toString()
+                    else -> {
+                        throw NotImplementedError()
+                    }
+                }
+            })
+
+            Tools.setViewToLayout(editText,
+                fieldPair.value[FieldsEnum.x.ordinal] to fieldPair.value[FieldsEnum.y.ordinal])
+        }
+
     }
 
 
@@ -247,7 +315,7 @@ class StatusFragment : Fragment() {
             override fun afterTextChanged(newText: Editable?) {
                 val value: Int = try {
                     newText.toString().toInt()
-                } catch (e: NumberFormatException) {
+                } catch (_: NumberFormatException) {
                     return
                 }
                 Tools.removeZerosFromBegin(statText)

@@ -35,7 +35,13 @@ class Character private constructor(val id: Int) {
         }
     }
 
-    var name: String = ""
+    var character_name: String = ""
+    var class_level: String = ""
+    var background: String = ""
+    var player_name: String = ""
+    var race: String = ""
+    var alignment: String = ""
+    var expererience_points: String = ""
     // Need to comment these until they are actually used for serialization
 //    lateinit var primary_class: DND_classes
 //    lateinit var primary_race: Races
@@ -86,7 +92,8 @@ class Character private constructor(val id: Int) {
         MAINSTATS, SAVING_THROWS, SKILLS, ARMOR_CLASS, INITIATIVE, SPEED, PROFICIENCIES_AND_LANGUAGES,
         HIT_POINT_MAXIMUM, CURRENT_HIT_POINTS, TEMPORARY_HIT_POINTS, HIT_DICE, HIT_DICE_TOTAL,
         SUCCESSES, FAILURES, ATTACKS_SPELLCASTING, ATTACKS_SPELLCASTING_TEXT, CP, SP, EP, GP, PP,
-        EQUIPMENT_TEXT, PERSONAL_TRAITS, IDEALS, BONDS, FLAWS, FEATURES_AND_TRAITS
+        EQUIPMENT_TEXT, PERSONAL_TRAITS, IDEALS, BONDS, FLAWS, FEATURES_AND_TRAITS,
+        CHARACTER_NAME, CLASS_LEVEL, BACKGROUND, PLAYER_NAME, RACE, ALIGNMENT, EXPERIENCE_POINTS,
     }
 
     enum class SavingThrows {
