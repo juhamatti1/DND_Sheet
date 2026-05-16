@@ -28,7 +28,6 @@ import androidx.core.widget.NestedScrollView
 import com.example.dnd_sheet.Character
 import com.example.dnd_sheet.Character.EditTextsId
 import com.example.dnd_sheet.R
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 
@@ -51,6 +50,8 @@ class Tools {
 
             val file = File(filesDir, fileName)
             file.writeText(jsonString)
+
+            // Saving also to global character map
             return file
         }
 
@@ -382,10 +383,13 @@ class Tools {
         }
 
         fun stringToInt(text: String): Int {
+            if(text.isEmpty()) {
+                return 0
+            }
             val value: Int = try {
                 text.toInt()
             } catch (e: NumberFormatException) {
-                Log.w(TAG, "Invalid number")
+                Log.w(TAG, "Invalid number" + e.message)
                 return Int.MIN_VALUE
             }
             return value

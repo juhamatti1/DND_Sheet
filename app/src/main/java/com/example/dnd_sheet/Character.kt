@@ -1,10 +1,12 @@
 package com.example.dnd_sheet
 
 import kotlinx.serialization.Serializable
+import kotlin.random.Random
 
+val globalCharacters = HashMap<Int, Character>()
 
 @Serializable
-class Character private constructor() {
+class Character private constructor(val id: Int) {
     companion object {
 
         // @Volatile, you ensure that:
@@ -13,7 +15,6 @@ class Character private constructor() {
         @Volatile
         private var instance: Character? = null
 
-
         /**
          * If Character instance is null, lock the code block with synchronized,
          * check again if character is null, create a new Character instance and assign it to instance.
@@ -21,7 +22,7 @@ class Character private constructor() {
          */
         fun getInstance(newCharacter: Character? = null): Character {
             instance ?: synchronized(this) {
-                instance ?: Character().also { instance = it }
+                instance ?: Character(Random.nextInt()).also { instance = it }
             }
 
             newCharacter ?: return instance!!
@@ -40,9 +41,9 @@ class Character private constructor() {
 //    lateinit var primary_race: Races
 //    var experience: Float = 0f
 
-    var mainStats = IntArray(MainStats.entries.size) { 0 }
-    var savingThrows = IntArray(SavingThrows.entries.size) { 0 }
-    var skills = IntArray(Skills.entries.size) { 0 }
+    var mainStats = IntArray(MainStats.entries.size)
+    var savingThrows = IntArray(SavingThrows.entries.size)
+    var skills = IntArray(Skills.entries.size)
     var armorClass: Int = 0
     var initiative: Int = 0
     var speed: Int = 0
