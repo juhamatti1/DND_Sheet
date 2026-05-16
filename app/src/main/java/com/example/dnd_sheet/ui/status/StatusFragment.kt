@@ -89,7 +89,8 @@ class StatusFragment : Fragment() {
 
         val ctx = Tools.checkContext(context)
 
-        Tools.setDrawableToLayout(R.drawable.stats, ctx)
+        Tools.setDrawableToLayout(R.drawable.basic_name, ctx)
+        Tools.setDrawableToLayout(R.drawable.stats, ctx, true)
 
         createMainStatsViews(ctx)
 
@@ -115,7 +116,7 @@ class StatusFragment : Fragment() {
         for (i in 0..5) {
             // Creating edit texts for main stats
             val mainStatEditText =
-                Tools.createEditText(0.14, 0.03, EditTextsId.MAINSTATS, i, context = context)
+                Tools.createEditText(0.207, 0.0365, EditTextsId.MAINSTATS, i, context = context)
 
             // Creating text views for bonus stats
             val bonusView = TextView(context)
@@ -146,8 +147,8 @@ class StatusFragment : Fragment() {
                 }
             })
 
-            Tools.setViewToLayout(mainStatEditText, 0.155 to (0.06 + i.toDouble() * 0.109))
-            Tools.setViewToLayout(bonusView, 0.155 to (0.095 + i.toDouble() * 0.109))
+            Tools.setViewToLayout(mainStatEditText, 0.1225 to (0.098 + i.toDouble() * 0.1041))
+            Tools.setViewToLayout(bonusView, 0.155 to (0.139 + i.toDouble() * 0.1039))
         }
     }
 
@@ -183,7 +184,7 @@ class StatusFragment : Fragment() {
                 MainStats.INSPIRATION.ordinal
             )
         )
-        Tools.setViewToLayout(inspirationText, 0.41 to 0.01)
+        Tools.setViewToLayout(inspirationText, 0.41 to 0.059)
 
         // Creating edit text for proficiency bonus
         val proficiencyText = Tools.createEditText(
@@ -199,7 +200,7 @@ class StatusFragment : Fragment() {
                 MainStats.PROFICIENCY_BONUS.ordinal
             )
         )
-        Tools.setViewToLayout(proficiencyText, 0.41 to 0.067)
+        Tools.setViewToLayout(proficiencyText, 0.41 to 0.114)
     }
 
     private fun createSkills(context: Context) {
@@ -222,7 +223,7 @@ class StatusFragment : Fragment() {
                 Tools.createRadioButton(skills.ordinal, EditTextsId.SKILLS, context = context)
             Tools.setViewToLayout(
                 proficiencyButton,
-                0.445 to 0.304 + skills.ordinal.toDouble() * 0.02065
+                0.445 to 0.339 + skills.ordinal.toDouble() * 0.01958
             )
 
             val skillsView =
@@ -235,7 +236,7 @@ class StatusFragment : Fragment() {
                     context = context
                 )
             skillsView.addTextChangedListener(SkillsUpdater(skillsView, skills))
-            Tools.setViewToLayout(skillsView, 0.5 to 0.3 + skills.ordinal.toDouble() * 0.02065)
+            Tools.setViewToLayout(skillsView, 0.5 to 0.335 + skills.ordinal.toDouble() * 0.0196)
         }
     }
 
@@ -268,7 +269,7 @@ class StatusFragment : Fragment() {
                 MainStats.PASSIVE_WISDOM.ordinal
             )
         )
-        Tools.setViewToLayout(passiveWisdomText, 0.082 to 0.71)
+        Tools.setViewToLayout(passiveWisdomText, 0.082 to 0.7235)
     }
 
     private fun createSavingThrows(context: Context) {
@@ -297,7 +298,7 @@ class StatusFragment : Fragment() {
 
             Tools.setViewToLayout(
                 proficiencyButton,
-                0.445 to 0.128 + savingThrow.ordinal.toDouble() * 0.02065
+                0.445 to 0.1715 + savingThrow.ordinal.toDouble() * 0.0196
             )
 
             val savingThrowView = Tools.createEditText(
@@ -316,7 +317,7 @@ class StatusFragment : Fragment() {
             )
             Tools.setViewToLayout(
                 savingThrowView,
-                0.505 to 0.124 + savingThrow.ordinal.toDouble() * 0.0207
+                0.505 to 0.1675 + savingThrow.ordinal.toDouble() * 0.0196
             )
         }
     }

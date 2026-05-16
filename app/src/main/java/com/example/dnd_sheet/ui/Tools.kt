@@ -33,13 +33,14 @@ import java.io.File
 
 class Tools {
     companion object {
+        private const val DEBUG = false
         private const val TAG: String = "Tools"
 
         // Name for json file
         private val fileName = "character.json"
 
         // Size of drawable image
-        private lateinit var drawableSize: Size
+        private var drawableSize = Size(0, 0)
 
         // Layout of the drawable
         private lateinit var drawableLayout: ConstraintLayout
@@ -88,7 +89,7 @@ class Tools {
             drawableLayout = layout
         }
 
-        fun setDrawableToLayout(drawable: Int, context: Context) {
+        fun setDrawableToLayout(drawable: Int, context: Context, append: Boolean = false) {
             // Change layout width x height ratio to match background image
             val bitmap = BitmapFactory.decodeResource(context.resources, drawable)
 
@@ -110,9 +111,34 @@ class Tools {
             val imageView = ImageView(context)
             imageView.id = View.generateViewId()
             imageView.setImageBitmap(resizedBitmap)
+
+            val lastView = drawableLayout.getChildAt(drawableLayout.childCount - 1)
+
             drawableLayout.addView(imageView)
 
-            drawableSize = Size(resizedBitmap.width, resizedBitmap.height)
+            val constraintSet = ConstraintSet()
+            constraintSet.clone(drawableLayout)
+            // Constraint in horizontal
+            constraintSet.connect(
+                imageView.id, ConstraintSet.START,
+                drawableLayout.id, ConstraintSet.START, 0
+            )
+            if(append && lastView != null) {
+                // Constraint in vertical
+                constraintSet.connect(
+                    imageView.id, ConstraintSet.TOP,
+                    lastView.id, ConstraintSet.BOTTOM, 0
+                )
+
+            }
+            constraintSet.applyTo(drawableLayout)
+
+            drawableSize = Size(resizedBitmap.width,
+                if(append) drawableSize.height + resizedBitmap.height
+                else resizedBitmap.height)
+
+            Log.d("TOOLS", "bitmap (${resizedBitmap.width}, ${resizedBitmap.height})")
+            Log.d("TOOLS", "drawableSize(${drawableSize.width}, ${drawableSize.height})")
         }
 
         fun createEditText(
@@ -352,6 +378,11 @@ class Tools {
 
         fun setViewToLayout(view: View, position: Pair<Double, Double>) {
             drawableLayout.addView(view)
+
+            if(DEBUG) {
+                view.setBackgroundColor(Color.RED)
+                view.alpha = 0.5f
+            }
 
             val constraintSet = ConstraintSet()
             constraintSet.clone(drawableLayout)

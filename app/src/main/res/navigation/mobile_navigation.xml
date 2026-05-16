@@ -6,12 +6,6 @@
     app:startDestination="@+id/navigation_status">
 
     <fragment
-        android:id="@+id/navigation_basic_name"
-        android:name="com.example.dnd_sheet.ui.basic_name.BasicNameFragment"
-        android:label="@string/title_basic_name"
-        tools:layout="@layout/fragment_basic_name" />
-
-    <fragment
         android:id="@+id/navigation_status"
         android:name="com.example.dnd_sheet.ui.status.StatusFragment"
         android:label="@string/title_status"

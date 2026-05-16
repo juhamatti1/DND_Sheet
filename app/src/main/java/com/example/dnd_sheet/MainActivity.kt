@@ -59,7 +59,6 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.navigation_basic_name,
                 R.id.navigation_status,
                 R.id.navigation_equipment,
                 R.id.navigation_personal_traits
@@ -84,7 +83,7 @@ class MainActivity : AppCompatActivity() {
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
 
-            if (result.resultCode != Activity.RESULT_OK) {
+            if (result.resultCode != RESULT_OK) {
                 return@registerForActivityResult
             }
 
